@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>📚 فهرس دروس الشيخ بسام جرار</title>
+
+<!-- تنسيق بسيط متوافق مع الموبايل -->
+<style>
+body{font-family:"Segoe UI",Tahoma,Arial;line-height:1.8;background:#f9f9f9;padding:24px}
+h1{margin:0 0 24px;text-align:center}
+.search-box{max-width:600px;margin:auto}
+#query{width:100%;padding:12px;font-size:18px;border:1px solid #ccc;border-radius:8px}
+.result{background:#fff;padding:12px;margin:12px 0;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.result b{display:block;margin-bottom:4px}
+.result a{color:#0069c2;text-decoration:none}
+.no-results{color:#c00;font-weight:bold;margin-top:24px;text-align:center}
+.follow-up{margin-top:24px;font-style:italic;text-align:center}
+</style>
+</head>
+
+<body>
+<h1>📚 فهرس دروس الشيخ بسام جرار</h1>
+
+<div class="search-box">
+  <input id="query" placeholder="اكتب مصطلح البحث ثم اضغط Enter 🔍">
+</div>
+
+<div id="results"></div>
+
+<!-- 📝 قاعدة البيانات تُحمَّل من lessons.json (مُستخرَجة من Excel) -->
+<script>
+/*----------------------------------------------------------------------------------
+  1- تحميل الداتا مرة واحدة عند فتح الصفحة
+----------------------------------------------------------------------------------*/
+let LESSONS = [];             // كل السجلات
+let SURAH_SET = new Set();    // مجموعة أسماء السور لتسهيل البحث المركّب
+fetch('lessons.json').then(r=>r.json()).then(data=>{
+  LESSONS = data;
+  data.forEach(r => SURAH_SET.add(normalize(r["Surah Name"] || "")));
+});
+
+/*----------------------------------------------------------------------------------
+  2- إعداد قاموس التوسّع المفاهيمى (مسموح لأن المصادر داخليّة)
+----------------------------------------------------------------------------------*/
+const CONCEPT_MAP = {
+  "الأخلاق":["الصدق","الأمانة","العدل","الحياء","الإخلاص","التواضع"]
+  // أضف أى مجموعات أخرى من نفس القاعدة عند الحاجة
+};
+
+/*----------------------------------------------------------------------------------
+  3- وظائف المساعدة
+----------------------------------------------------------------------------------*/
+// إزالة التشكيل + تطبيع الهَمْزات + ي/ى + مسافات زائدة
+function normalize(str=""){
+  return str
+    .replace(/[\u064B-\u0652]/g,"")        // حركات
+    .replace(/[أإآٱ]/g,"ا")
+    .replace(/ى/g,"ي")
+    .replace(/[^\u0621-\u064A0-9\s]/g,"") // رموز زائدة
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+// هل الاستعلام يحتوى رقمًا (بحث مركّب سورة+آية)؟
+function parseCompound(q){
+  const words = q.split(" ");
+  const num   = words.find(w=>/^\d+$/.test(w));
+  if(!num) return null;
+
+  const name = words.filter(w=>w!==num).join(" ");
+  return { surah: normalize(name), verse: num };
+}
+
+// ترتيب النتائج حسب نوع المطابقة
+function rank(type){
+  return {exact:0,normalized:1,compound:2,semantic:3}[type] || 4;
+}
+
+/*----------------------------------------------------------------------------------
+  4- آلية البحث الرئيسيّة
+----------------------------------------------------------------------------------*/
+function search(qRaw){
+  const qExact = qRaw.trim();
+  const qNorm  = normalize(qExact);
+  const compound = parseCompound(qNorm);
+
+  let hits = [];
+
+  // أ) مطابقة حرفيّة كاملة
+  LESSONS.forEach(r=>{
+    if((r.Index||"").includes(qExact)){
+      hits.push({r,type:"exact"});
+    }
+  });
+
+  // ب) تطبيع حروفى إذا لم نجد شيئًا
+  if(!hits.length){
+    LESSONS.forEach(r=>{
+      if(normalize(r.Index||"").includes(qNorm)){
+        hits.push({r,type:"normalized"});
+      }
+    });
+  }
+
+  // ج) بحث مركّب (سورة + رقم آية)
+  if(!hits.length && compound && SURAH_SET.has(compound.surah)){
+    LESSONS.forEach(r=>{
+      if(normalize(r["Surah Name"]||"")===compound.surah &&
+         String(r["Verse No"]).replace(/\.0$/,"")===compound.verse){
+        hits.push({r,type:"compound"});
+      }
+    });
+  }
+
+  // د) توسّع مفهومى
+  if(!hits.length && CONCEPT_MAP[qExact]){
+    CONCEPT_MAP[qExact].forEach(term=>{
+      LESSONS.forEach(r=>{
+        if(normalize(r.Index||"").includes(normalize(term))){
+          hits.push({r,type:"semantic"});
+        }
+      });
+    });
+  }
+
+  // ه) ترتيب وإخراج
+  hits.sort((a,b)=>rank(a.type)-rank(b.type));
+  return hits;
+}
+
+/*----------------------------------------------------------------------------------
+  5- عرض النتائج + سؤال مُقترَح
+----------------------------------------------------------------------------------*/
+function show(hits,q){
+  const box = document.getElementById("results");
+  box.innerHTML = "";
+
+  if(!hits.length){
+    box.innerHTML =
+      `<div class="no-results">⚠️ عذرًا، لا توجد نتائج لموضوعك في قاعدة البيانات. بإمكانك إعادة الصياغة أو تجربة مصطلحات ذات صلة.</div>`;
+    return;
+  }
+
+  hits.forEach(({r})=>{
+    const minute = r.Minute || "";
+    const link   = r["Link to Minute"] || "#";
+    box.innerHTML += `
+      <div class="result">
+        <b>عنوان الدرس:</b> ${r["Lesson Name "]||""}
+        <b>الموضوع:</b> ${r.Index||""}
+        <b>الدقيقة:</b> ${minute}
+        <b><a href="${link}" target="_blank">اضغط هنا للمشاهدة ▶️</a></b>
+      </div>`;
+  });
+
+  // اقتراح سؤال تابع (كلمة مجاورة)
+  const words = q.split(" ");
+  if(words.length===1 && hits.length){
+    const alt = normalize(hits[0].r.Index||"").split(" ").find(w=>w!==normalize(q));
+    if(alt){
+      box.innerHTML += `<div class="follow-up">🤔 هل تقصد: <strong>${alt}</strong>؟</div>`;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------------
+  6- ربط حقل الإدخال ↔ البحث
+----------------------------------------------------------------------------------*/
+document.getElementById("query").addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
+    const q = e.target.value;
+    show(search(q),q);
+  }
+});
+</script>
+</body>
+</html>
