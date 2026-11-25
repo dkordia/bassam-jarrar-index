@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تحديث بيانات الفهرس</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<script>try{var t=localStorage.getItem('idxTheme');if(t)document.documentElement.setAttribute('data-theme',JSON.parse(t));}catch(e){}</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root,[data-theme="dark"]{
+--bg:#0a1a1a;--surface:#0f2626;--card:#132f2f;--card-2:#163838;
+--gold:#d4a855;--gold-dim:#a07830;--gold-soft:rgba(212,168,85,.12);
+--teal:#2dd4bf;--teal-soft:rgba(45,212,191,.09);
+--amber:#f0a14a;--amber-soft:rgba(240,161,74,.12);--red:#ff7b7b;--red-soft:rgba(255,90,90,.1);
+--text:#ece4d4;--text-dim:#a39a88;--text-muted:#7a705f;
+--border:rgba(212,168,85,.13);--border-2:rgba(212,168,85,.28);
+}
+[data-theme="light"]{
+--bg:#f7f3ea;--surface:#fffdf8;--card:#ffffff;--card-2:#fbf7ee;
+--gold:#9a6b14;--gold-dim:#b8862e;--gold-soft:rgba(154,107,20,.09);
+--teal:#0f766e;--teal-soft:rgba(15,118,110,.08);
+--amber:#b45f06;--amber-soft:rgba(180,95,6,.1);--red:#c03535;--red-soft:rgba(192,53,53,.08);
+--text:#2a2418;--text-dim:#5f5646;--text-muted:#8a7f6b;
+--border:rgba(120,90,30,.16);--border-2:rgba(120,90,30,.32);
+}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.7;overflow-x:hidden}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:8px}
+.wrap{max-width:900px;margin:0 auto;padding:28px 16px 60px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:22px}
+h1{font-family:'Amiri',serif;font-size:clamp(1.6rem,5vw,2.2rem);line-height:1.35}
+h1 span{color:var(--gold)}
+.sub{color:var(--text-dim);margin-top:4px}
+.icon-btn{width:38px;height:38px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim)}
+.back{display:inline-block;margin-top:8px;color:var(--teal);font-size:.9rem}
+.steps{list-style:none;counter-reset:s;display:grid;gap:8px;margin:0 0 20px}
+.steps li{counter-increment:s;display:flex;gap:10px;align-items:flex-start;color:var(--text-dim)}
+.steps li::before{content:counter(s);flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--gold-soft);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+.drop{display:block;border:2px dashed var(--border-2);border-radius:18px;background:var(--surface);padding:34px 18px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.drop:hover,.drop.over{border-color:var(--gold);background:var(--gold-soft)}
+.drop b{display:block;font-size:1.15rem;color:var(--gold);margin-bottom:4px}
+.drop input{position:absolute;opacity:0;width:1px;height:1px}
+.cur{margin-top:8px;font-size:.85rem;color:var(--text-muted)}
+.status{margin-top:16px;padding:12px 14px;border-radius:12px;border:1px solid var(--border)}
+.status[hidden],#out[hidden],#after[hidden]{display:none}
+.status.ok{background:var(--teal-soft);color:var(--teal)}
+.status.err{background:var(--red-soft);color:var(--red)}
+.status.busy{background:var(--card)}
+.spin{display:inline-block;width:16px;height:16px;vertical-align:-3px;margin-left:6px;border-radius:50%;border:2px solid var(--border-2);border-top-color:var(--gold);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:18px 0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;text-align:center}
+.card b{display:block;color:var(--teal);font-size:1.15rem}
+.card span{font-size:.8rem;color:var(--text-muted)}
+h3{font-size:1.02rem;color:var(--gold);margin-bottom:6px}
+.cmp,.checks{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-top:12px}
+.plus{color:var(--teal)}.minus{color:var(--amber)}
+.hint,.note{font-size:.85rem;color:var(--text-muted)}
+details{margin-top:6px}
+summary{cursor:pointer;padding:4px 0}
+.cmp ol{margin:6px 22px 0 0;max-height:260px;overflow:auto;font-size:.88rem;color:var(--text-dim)}
+.chk summary{display:flex;align-items:center;gap:8px;color:var(--text-dim)}
+.chk .n{min-width:34px;text-align:center;border-radius:8px;padding:0 6px;background:var(--teal-soft);color:var(--teal);font-weight:700;font-size:.85rem}
+.chk.has .n{background:var(--amber-soft);color:var(--amber)}
+.chk:not(.has) summary{cursor:default}
+.tw{overflow:auto;max-height:340px;margin-top:6px;border:1px solid var(--border);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:.86rem}
+th,td{padding:5px 9px;border-bottom:1px solid var(--border);text-align:right;vertical-align:top}
+th{position:sticky;top:0;background:var(--card-2);color:var(--text-dim);font-weight:500}
+td:first-child{color:var(--gold);white-space:nowrap}
+.go{margin-top:18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{border:0;border-radius:12px;background:var(--gold);color:#1a1205;font-weight:700;padding:12px 22px;font-size:1.02rem}
+.btn:hover{filter:brightness(1.07)}
+#after{margin-top:14px;background:var(--gold-soft);border:1px solid var(--border-2);border-radius:14px;padding:12px 16px}
+#after ol{margin-right:20px}
+code{direction:ltr;unicode-bidi:embed;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0 6px;font-size:.9em}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>تحديث <span>بيانات الفهرس</span></h1>
+      <p class="sub">حوّل ملف Excel الخاص بالفهرس إلى ملف <code>data.js</code> الذي يقرأ منه الموقع.</p>
+      <a class="back" href="index.html">→ العودة إلى الفهرس</a>
+    </div>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="تبديل الوضع الفاتح والداكن" title="الوضع الفاتح/الداكن"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  </header>
+
+  <ol class="steps">
+    <li>اختر ملف Excel (‎.xlsx‎) الذي فيه الأعمدة: السورة، الآية، فهرس، الدقيقة، رابط الدقيقة، عنوان الدرس، تاريخ التنزيل، ونوع الذكر (اختياري). إن كان فيه أكثر من ورقة بهذه الأعمدة تُستخدم أكبرها.</li>
+    <li>راجع الملخص والملاحظات (اختياري).</li>
+    <li>نزّل <code>data.js</code> الجديد وضعه مكان القديم في مجلد الموقع.</li>
+  </ol>
+
+  <label class="drop" id="drop">
+    <input id="file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+    <b>اختر ملف Excel أو اسحبه إلى هنا</b>
+    <span>يُقرأ الملف داخل متصفحك فقط، ولا يُرفع إلى أي مكان.</span>
+  </label>
+  <p class="cur" id="cur"></p>
+
+  <div class="status" id="status" role="status" hidden></div>
+
+  <section id="out" hidden>
+    <div id="report"></div>
+    <div class="go">
+      <button class="btn" id="dl" type="button">⬇ تنزيل data.js</button>
+      <span class="hint">الملاحظات أعلاه لا تمنع التنزيل؛ يمكنك تصحيحها في Excel لاحقًا وتكرار الخطوات.</span>
+    </div>
+    <div id="after" hidden>
+      <h3>الخطوة الأخيرة</h3>
+      <ol>
+        <li>انقل الملف <code>data.js</code> الذي نزل الآن (غالبًا في مجلد التنزيلات) إلى مجلد الموقع، واستبدل به الملف القديم. إن سمّاه المتصفح <code>data (1).js</code> فأعد تسميته إلى <code>data.js</code>.</li>
+        <li>افتح <code>index.html</code> أو حدّث الصفحة، فيظهر الفهرس بالبيانات الجديدة.</li>
+      </ol>
+    </div>
+  </section>
+</div>
+<script src="data.js"></script>
+<script>
+/* ==========================================================================
+   Arabic search engine for the lesson index (no DOM access in this file).
+   Layers: normalization → clitic/article analysis → light stem → root (ISRI)
+           → inverted indexes → BM25 ranking with match tiers, typo tolerance,
+           synonyms / broken plurals, Quran-text (ayah) search, references.
+   ========================================================================== */
+var Engine = (function () {
+'use strict';
+
+/* ---------- 1. Normalization ---------- */
+const RE_AR_DIGITS = /[٠-٩]/g, RE_FA_DIGITS = /[۰-۹]/g;
+function asciiDigits(t) {
+  return String(t).replace(RE_AR_DIGITS, c => String.fromCharCode(c.charCodeAt(0) - 0x0660 + 48))
+                  .replace(RE_FA_DIGITS, c => String.fromCharCode(c.charCodeAt(0) - 0x06F0 + 48));
+}
+// "Morphological" normalization: removes harakat/tatweel, unifies alef/hamza seats, keeps ة
+// Plain Arabic/ASCII text (the usual case) cannot be changed by NFKC (apart from mark order, and every
+// mark is dropped anyway) and holds no marks or letters outside the Arabic block, so it skips the
+// NFKC and Unicode-property passes; any other text takes the full route. Both give the same result.
+const RE_FAST = /^[\u0000-\u007F\u00A0\u00AB\u00BB\u0600-\u0652\u0656-\u0674\u0679-\u06FF\u2013\u2014\u2018-\u201D]*$/;
+const RE_STRIP_FAST = /[\u0610-\u061A\u0640\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]/g;
+const RE_SEP_FAST = /[^0-9a-z\u0620-\u064A\u0660-\u0669\u066E\u066F\u0671-\u06D3\u06D5\u06EE-\u06FC\u06FF]+/g;
+const UNIFY = { '\u0622': '\u0627', '\u0623': '\u0627', '\u0625': '\u0627', '\u0671': '\u0627', '\u0672': '\u0627', '\u0673': '\u0627', '\u0675': '\u0627',
+  '\u0649': '\u064A', '\u0624': '\u0621', '\u0626': '\u0621', '\u06A9': '\u0643', '\u06AA': '\u0643', '\u06CC': '\u064A', '\u06D0': '\u064A', '\u06CD': '\u064A',
+  '\u06C1': '\u0647', '\u06BE': '\u0647', '\u06C0': '\u0647', '\u06D5': '\u0647', '\u06C3': '\u0629' };
+const RE_UNIFY = /[\u0622-\u0626\u0649\u0671-\u0673\u0675\u06A9\u06AA\u06BE\u06C0\u06C1\u06C3\u06CC\u06CD\u06D0\u06D5]/g;
+const unifyChar = c => UNIFY[c] || c;
+function mnorm(t) {
+  if (t == null) return '';
+  t = String(t);
+  if (!t) return '';
+  const fast = RE_FAST.test(t);
+  if (fast) {
+    t = asciiDigits(t.replace(/\s+(?=[\u064B-\u065F\u0670])/g, '')).replace(RE_STRIP_FAST, '');
+  } else {
+    t = t.normalize('NFKC');
+    t = t.replace(/[\u200B-\u200F\u2060\uFEFF]/g, '').replace(/\s+(?=[\u064B-\u065F\u0670])/g, '');  // joiners, stray space before a mark
+    t = asciiDigits(t);
+    t = t.replace(/[\u0640\u06E5\u06E6]/g, '').replace(/\p{M}/gu, '');
+  }
+  // Uthmani «ءامنوا، القرءان» = «آمنوا، القرآن»; «مائة» = «مئة»
+  if (t.includes('مائ')) t = t.replace(/(?<!\p{L})([وفبلك]?)مائ(?=[ةهت])/gu, '$1مئ');
+  t = t.replace(RE_UNIFY, unifyChar).toLowerCase();
+  // (after ؤ/ئ → ء, so that normalizing twice changes nothing; Uthmani writes «و\u064Eء\u064Eات\u064Fوا» but «ب\u0650\u0640\u064E\u0654اي\u064E\u0670ت\u0650»)
+  if (t.includes('ء')) t = t.replace(/قرءان/g, 'قران').replace(/(?<!\p{L})(و?)ءا/gu, '$1ا');
+  t = t.replace(fast ? RE_SEP_FAST : /[^\p{L}\p{N}]+/gu, ' ').trim();
+  if (t.includes('شء')) t = t.replace(/(^|\s)([وفبلك]{0,2}(?:ال)?)شء(?=\s|$)/g, '$1$2شيء');   // شئ = شيء
+  return t.replace(/(^|\s)([\u0648\u0641]) (?=\S)/g, '$1$2');   // detached conjunction: "\u0648 \u062A\u0644\u0643" -> "\u0648\u062A\u0644\u0643"
+}
+const toN = s => s.replace(/ة/g, 'ه');
+// Search normalization (ة → ه): the key space of every index
+function norm(t) { return toN(mnorm(t)); }
+
+/* ---------- 2. Tokenizer (keeps offsets for highlighting) ---------- */
+const RE_WORD = /[\p{L}\p{N}\p{M}\u0640]+/gu;
+// The same words recur thousands of times across the index and the Quran text, so each distinct
+// word is normalized once and reused (tokens stay fresh objects: callers annotate them).
+const WORD_CACHE = new Map();
+function wordParts(w) {
+  let r = WORD_CACHE.get(w);
+  if (r) return r;
+  r = [];
+  // Uthmani dagger alef (ك\u0650ت\u064E\u0670ب، ه\u064E\u0670ذا): primary form reads it as ا, alternate form drops it
+  const mm = w.includes('\u0670') ? mnorm(daggerAsAlef(w)) : mnorm(w);
+  if (mm) {
+    let alt = w.includes('\u0670') ? mnorm(w).split(' ') : null;
+    const bare = w.replace(/[\u064B-\u065F\u0670\u0640]/g, '');
+    const hz = hamzated(w), ha = /^[وفبكل]?[أإآ]ل/.test(bare), wa = /^[وف][أإ]/.test(bare);
+    let parts = mm.split(' ');
+    const voc = /^[وف]?[\u064B-\u065F]*[يی][\u064B-\u065F\u0640]*\u0670/.test(w) && parts[0].match(/^([وف]?يا)(..+)$/);
+    const abd = parts[0].match(/^([وفل]?عبد)(ال..+)$/);
+    const sp = voc || abd;
+    if (sp) { parts = [sp[1], sp[2]].concat(parts.slice(1)); alt = null; }
+    parts.forEach((part, k) => {
+      if (!part) return;
+      const q = { m: part, n: toN(part), hz, ha: k === 0 && ha };
+      if (k === 0 && wa) q.wa = true;
+      if (alt && alt[k] && alt[k] !== part) q.alt = toN(alt[k]);
+      r.push(q);
+    });
+  }
+  if (WORD_CACHE.size > 250000) WORD_CACHE.clear();
+  WORD_CACHE.set(w, r);
+  return r;
+}
+function tokenize(text) {
+  const out = [];
+  if (!text) return out;
+  RE_WORD.lastIndex = 0;
+  let m, lead = null;
+  while ((m = RE_WORD.exec(text))) {
+    const parts = wordParts(m[0]), s = m.index, e = m.index + m[0].length;
+    if (parts.length === 1 && (parts[0].m === 'و' || parts[0].m === 'ف') && /^[ \t]+[\u0621-\u064A\u0671]/.test(text.slice(e, e + 4))) {
+      lead = { c: parts[0].m, s };                    // «و تلك» → «وتلك»
+      continue;
+    }
+    for (let k = 0; k < parts.length; k++) {
+      const q = parts[k];
+      const tk = { m: q.m, n: q.n, s, e, hz: q.hz };
+      if (q.alt) tk.alt = q.alt;
+      if (q.ha) tk.ha = true;
+      if (q.wa) tk.wa = true;
+      if (lead && k === 0) { tk.m = lead.c + tk.m; tk.n = lead.c + tk.n; if (tk.alt) tk.alt = lead.c + tk.alt; tk.s = lead.s; if (/^[أإ]/.test(m[0])) tk.wa = true; }
+      out.push(tk);
+    }
+    lead = null;
+  }
+  if (lead) out.push({ m: lead.c, n: lead.c, s: lead.s, e: lead.s + 1, hz: false });
+  return out;
+}
+
+// medial/final hamza seats make the ISRI root unreliable (يؤمنون → يوم، القرآن → قرن)
+function hamzated(w) {
+  const x = w.replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, '');
+  if (/[ؤئءآ]/.test(x)) return true;
+  return /[أإ]/.test(x.replace(/^(?:[وفبلك]?(?:ال)?|لل)[أإ]/, ''));
+}
+function daggerAsAlef(w) {
+  return w.replace(/و\u0670/g, 'ا').replace(/ى\u0670(?=[\u064B-\u065F\u06D6-\u06ED]*[\u0621-\u064A\u0671])/g, 'ا')
+          .replace(/ى\u0670/g, 'ى').replace(/\u0670/g, 'ا');
+}
+
+/* ---------- 3. Lexical resources ---------- */
+const STOP = new Set(('من في الى الي عن ما لا لم لن ان انه انها انا انهم لقد لعل او ثم هل قد كل بعض التي الذي الذين اللذين اللتين اللاتي هو هي هم هن هما انت انا نحن هذا هذه هذان ذلك تلك اولئك هؤلاء مع عند بين حتى اذا اذ لما كان كانت يكون ليس غير بعد قبل حول فيه فيها عليه عليها اليه منه منها به بها له لها لهم و ف ب ل ك يا ايها اي كما مثل ايضا لكن بل الا انما سوف قال قالوا').split(' ').map(w => toN(mnorm(w))));
+// generic words in queries ("قصة موسى", "حكم الرجم"): they help ranking but are not required
+const SOFT = new Set(('قصه قصص معني تفسير شرح مفهوم حقيقه موضوع حكم احكام فضل مساله مسالة قضيه سر اسرار كلام حديث عن على علي ام سيدنا الشيخ كيف لماذا متي اين ماذا').split(' ').map(w => toN(mnorm(w))));
+function isSoftWord(n) { return SOFT.has(n); }
+function isStopWord(n) { return STOP.has(n) || (n.length >= 3 && 'وف'.includes(n[0]) && STOP.has(n.slice(1))) || (n.length >= 4 && n.startsWith('ول') && STOP.has(n.slice(2))); }
+const ALLAH = new Set(['الله', 'لله', 'ولله', 'فلله', 'بالله', 'والله', 'فالله', 'تالله', 'وتالله', 'وبالله', 'فبالله', 'ابالله']);
+// words that begin with ال/لل but where it is not the article
+const PROTECT = new Set(['الله', 'اله', 'الهه', 'الف', 'الاف', 'الم', 'الا', 'الي', 'الذي', 'التي', 'الذين', 'اللذين', 'اللتين', 'اللاتي', 'اللائي', 'اللواتي', 'الان', 'اللهم', 'الياس', 'اليسع', 'اليا', 'الياسين', 'الواح', 'الوان', 'الفاظ', 'الهام', 'الحاد', 'الزام', 'التزام', 'التماس', 'التقاء', 'الباني', 'الماني', 'المانيا', 'لله'].map(w => toN(mnorm(w))));
+// words whose ending only looks like a suffix (proper nouns etc.)
+const NO_STEM = new Set(['عشرين', 'ثلاثين', 'اربعين', 'خمسين', 'ستين', 'سبعين', 'ثمانين', 'تسعين', 'فرعون', 'هارون', 'قارون', 'زيتون', 'ماعون', 'طاعون', 'قانون', 'عرجون', 'سجين', 'يقطين', 'مسكين', 'ياسين', 'فلسطين', 'حطين', 'صفين', 'حنين', 'نون', 'عمران', 'سليمان', 'لقمان', 'هامان', 'رمضان', 'شعبان', 'عثمان', 'قران', 'فرقان', 'ايمان', 'انسان', 'شيطان', 'سلطان', 'برهان', 'بنيان', 'بيان', 'لسان', 'مكان', 'زمان', 'ميزان', 'طوفان', 'نسيان', 'كفران', 'غفران', 'رضوان', 'عدوان', 'بهتان', 'حيوان', 'اوثان', 'الوان', 'يونان', 'رومان', 'لبنان', 'ايران', 'تبيان', 'سبحان', 'رحمن', 'ابراهيم', 'اسماعيل', 'اسرايل', 'اسرائيل', 'جبريل', 'ميكايل', 'عزرائيل', 'اسرافيل', 'هابيل', 'قابيل', 'انجيل', 'سجيل', 'سلسبيل', 'زنجبيل', 'دليل', 'سبيل', 'قليل', 'جميل'].map(w => toN(mnorm(w))));
+// Broken plurals & lemma families the stemmer cannot derive (all keys normalized, article-free)
+const LEMMA_GROUPS = [
+  'ابن بن', 'داود داوود', 'نبوءه نبوه', 'صلاه صلوه',
+  'نبي انبياء نبيين نبيون نبوه', 'رسول رسل رساله رسالات مرسلين مرسلون', 'شيطان شياطين', 'ملائكه ملاك',
+  'ملك ملوك', 'امه امم', 'قوم اقوام', 'كتاب كتب', 'ايه ايات', 'سوره سور', 'قلب قلوب', 'نفس انفس نفوس',
+  'رجل رجال', 'امراه مراه نساء نسوه', 'يوم ايام', 'سنه سنين سنوات', 'عبد عباد عبيد', 'اله الهه', 'صنم اصنام',
+  'قريه قري', 'جبل جبال', 'بحر بحار ابحر', 'نجم نجوم', 'كوكب كواكب', 'ارض اراضي', 'سماء سماوات سموات',
+  'ذنب ذنوب', 'سيئه سيئات', 'حسنه حسنات', 'اب اباء ابو ابي ابا', 'ابن ابناء بنون بنين بني بنو',
+  'بنت بنات', 'اخ اخوه اخوان اخو اخي اخا', 'ولد اولاد', 'يتيم يتامي ايتام', 'فقير فقراء', 'مسكين مساكين',
+  'شهيد شهداء', 'حكم احكام', 'معجزه معجزات', 'صحابي صحابه', 'خليفه خلفاء', 'شاهد شهود',
+  'عين عيون', 'عهد عهود', 'قبر قبور', 'حديث احاديث', 'سبب اسباب', 'اسم اسماء', 'رب ارباب', 'دين اديان',
+  'جنه جنات جنان', 'نار نيران', 'بيت بيوت', 'مسجد مساجد', 'شهر شهور اشهر', 'حرف حروف', 'عدد اعداد',
+  'رقم ارقام', 'كلمه كلمات', 'قصه قصص', 'مثل امثال', 'طير طيور', 'ذو ذي', 'ملحد ملاحده الحاد', 'ساحر سحره',
+  'كافر كفار كافرين كافرون', 'مؤمن مؤمنين مؤمنون', 'مسلم مسلمين مسلمون', 'منافق منافقين منافقون',
+  'مشرك مشركين مشركون', 'صادق صادقين صادقون', 'ظالم ظالمين ظالمون', 'مفسد مفسدين مفسدون', 'نصراني نصاري',
+  'يهودي يهود', 'عربي عرب', 'اعرابي اعراب', 'حاكم حكام', 'امير امراء', 'وزير وزراء', 'جيش جيوش', 'حرب حروب',
+  'شعب شعوب', 'قبيله قبائل', 'لغه لغات', 'علم علوم', 'فقيه فقهاء', 'مفسر مفسرين مفسرون', 'معني معاني',
+  'شيء اشياء', 'حق حقوق', 'وجه وجوه', 'يد ايدي', 'روح ارواح', 'جسد اجساد', 'ريح رياح', 'سحاب سحب', 'صخره صخر',
+  'حجر حجاره', 'شجره شجر اشجار', 'ثمره ثمرات ثمار', 'نخله نخل نخيل', 'دابه دواب', 'خاتم خواتيم',
+  'باب ابواب', 'صوره صور', 'نور انوار', 'ظلمه ظلمات', 'سبيل سبل', 'طريق طرق', 'فتنه فتن',
+  'ابتلاء بلاء'
+];
+// Word families the stemmer cannot link (weak, hollow and hamzated roots, verb forms).
+// Curated by hand: every member must share the meaning, not just the root (no قال for القول, no أمن for الإيمان).
+const FAMILIES = [
+  'سهو ساهون ساهين ساه يسهو سها', 'صلاه صلوات مصلي مصلين مصلون يصلي يصلون تصلي نصلي صلاتهم صلاتك صلاته صلاتي',
+  'ايمان مؤمن مؤمنون مؤمنين مؤمنه مؤمنات امنوا يؤمن يؤمنون تؤمن تؤمنون نؤمن امنت امنتم',
+  'توبه تاب تابوا توبوا يتوب يتوبون تايب تايبون تايبين تواب متاب', 'طلاق طلق طلقتم طلقها طلقوهن فطلقوهن مطلقات مطلقه يطلق تطليق',
+  'صيام صوم صائم صايمون صايمين صايمات يصوم صاموا تصوموا', 'دعاء يدعو يدعون ادعو ادعوني ادعوا داعي دعوه',
+  'ذكر ذاكر ذاكرين ذاكرون يذكر يذكرون تذكر تذكره اذكروا اذكر', 'شكر شاكر شاكرين شاكرون يشكر يشكرون اشكروا شكور',
+  'صبر صابر صابرين صابرون اصبر اصبروا فاصبر يصبر تصبر صبروا صبور', 'كفر كفروا يكفر يكفرون كافر كافرين كافرون كفار كفور',
+  'هدايه هدي يهدي يهدون اهتدي اهتدوا مهتدين مهتدون هادي', 'نسيان نسي ينسي نسوا تنسي ننسي',
+  'خوف يخاف يخافون خايف خائفين تخافوا', 'استغفار استغفر استغفروا يستغفر يستغفرون مستغفرين',
+  'تقوي اتقوا يتقي يتقون متقين متقون', 'ظلم ظلموا يظلم يظلمون ظالم ظالمين ظالمون مظلوم',
+  'نفاق منافق منافقين منافقون منافقات', 'شرك اشرك اشركوا يشرك يشركون مشرك مشركين مشركون مشركات',
+  'جهاد جاهدوا يجاهد يجاهدون مجاهد مجاهدين مجاهدون', 'سحر ساحر سحره سحار مسحور يسحر',
+  'وحي اوحي يوحي اوحينا', 'حج حاج حجيج'
+];
+
+// True synonyms / same concept (whole phrases allowed). Weight close to exact.
+const SYNONYMS = [
+  ['الصيام', 'الصوم'], ['يوم القيامه', 'القيامه', 'الساعه', 'يوم الدين', 'اليوم الاخر', 'يوم البعث', 'يوم الحساب'],
+  ['جهنم', 'النار', 'السعير', 'الجحيم', 'سقر'], ['الجنه', 'الفردوس', 'جنات عدن', 'دار السلام'],
+  ['عيسي', 'المسيح', 'ابن مريم', 'عيسي ابن مريم'], ['ابليس', 'الشيطان'], ['بني اسرائيل', 'بنو اسرائيل', 'بني اسرايل', 'بنو اسرايل'],
+  ['19', 'تسعه عشر', 'العدد 19'], ['الاعجاز العددي', 'الاعجاز الرقمي'], ['الالحاد', 'الملاحده', 'الملحدين'],
+  ['المسجد الاقصي', 'بيت المقدس', 'القدس'], ['المسجد الحرام', 'الكعبه', 'البيت الحرام', 'البيت العتيق'],
+  ['القران', 'القران الكريم', 'المصحف'], ['جبريل', 'جبرائيل', 'الروح الامين', 'روح القدس'], ['الدجال', 'المسيح الدجال'],
+  ['المهدي', 'المهدي المنتظر'], ['اصحاب الكهف', 'اهل الكهف', 'الفتيه'], ['الحروف المقطعه', 'فواتح السور'],
+  ['ياجوج وماجوج', 'ياجوج', 'ماجوج'], ['زوال اسرائيل', 'نهايه اسرائيل', 'زوال اسرايل', 'نهايه اسرايل'],
+  ['الخمر', 'المسكرات'], ['الزنا', 'الفاحشه'], ['الربا', 'الفائده الربويه'], ['الحجاب', 'الخمار', 'الجلباب', 'اللباس الشرعي'],
+  ['الياس', 'اليا', 'ايليا'], ['اليسع', 'اليشع'], ['يونس', 'ذو النون', 'صاحب الحوت'], ['محمد', 'الرسول', 'رسول الله', 'النبي'],
+  ['التوراه', 'العهد القديم'], ['الانجيل', 'العهد الجديد'], ['الشوري', 'الديمقراطيه'], ['القسط', 'العدل']
+].map(g => g.map(norm));
+
+/* ---------- 4. Morphology ---------- */
+// ب / ل before a word without «ال» (ك is left out: كسبت ≠ ك + سبت)
+const PREP = ['ب', 'ل', 'وب', 'ول', 'فب', 'فل'];
+const PARTICLE = /^[وف]?(لكن|لعل|بعد|لدي|لدن|بين|ليت|لان|لما|لكي|بما|لمن|بمن)/;   // بعده ≠ ب + عدة، لدينا ≠ ل + دينا
+const COMPOUND = ['وال', 'فال', 'بال', 'كال', 'وبال', 'فبال', 'وكال', 'فكال'];
+const ARTICLES = ['وبال', 'فبال', 'وكال', 'فكال', 'ولل', 'فلل', 'وال', 'فال', 'بال', 'كال', 'لل', 'ال'];
+// Article/clitic stripping on an mnorm-ed word. `df` = corpus frequency of article-free forms (n-space).
+const HAMZA_SPLIT = new Set(['الياس']);   // «اليأس» = ال + يأس; «الياس» / «إلياس» is the prophet
+// words that are another word when written without «ال»: «أبغي رب\u064B\u0651ا» (a Lord) is not «الربا» (usury).
+// Without the article they get their own key (base + '~'), so «الربا» does not find them; a search typed
+// without the article («ربا») finds both.
+const BARE_OWN = new Set(['ربا']);
+const AL_WORD = new Set([...PROTECT].filter(w => w.startsWith('ال') && !STOP.has(w) && !ALLAH.has(w) && !['الحاد', 'اللهم'].includes(w)));
+function baseOf(m, df, ha, first, hz, wa) {
+  const n = toN(m);
+  if (ALLAH.has(n)) return 'الله';
+  if ((PROTECT.has(n) && !(hz && HAMZA_SPLIT.has(n))) || STOP.has(n)) return m;
+  const get = k => (df && df.get(toN(k))) || 0;
+  if (ha) { const c = /^[وفبك]ال/.test(m) ? m.slice(1) : m; return c.length >= 3 ? c : m; }
+  if (first && df && df.al && (m[0] === 'و' || m[0] === 'ف') && df.al.has(n) && !wa) return m;
+  for (const p of ARTICLES) {
+    if (m.length - p.length >= 2 && m.startsWith(p)) {
+      let r = m.slice(p.length);
+      if (p.endsWith('ال') && AL_WORD.has(toN('ال' + r)) && !(hz && HAMZA_SPLIT.has(toN('ال' + r)))) return 'ال' + r;   // والتزام → التزام
+      if (p.endsWith('لل') && get('ل' + r) > get(r)) r = 'ل' + r;   // لليل → ليل
+      if (p.length >= 3 && df && get(m) > get(r) && (!get(r) || (df.al && df.al.has(toN(m))))) return m;   // والد، والي — not «والرجاء»
+      return r;
+    }
+  }
+  if (m.length >= 4 && (m[0] === 'و' || m[0] === 'ف')) {
+    const r = m.slice(1);
+    if (wa && df && get(r)) return r;                                 // «وأحد» is و + أحد, never «واحد»
+    if (df && get(r) > get(m) && !(df.al && df.al.has(n))) return r;   // وهارون → هارون; واحد، وكيل، فكرة stay
+  }
+  return m;
+}
+const PRON = ['هما', 'كما', 'تما', 'ها', 'هم', 'هن', 'كم', 'كن', 'نا', 'ه'];
+const PLUR = ['ات', 'ون', 'ين', 'وا', 'ية'];
+function lightStem(b, vocab, mf) {
+  const bn = toN(b);
+  if (NO_STEM.has(bn) || b.length < 4 || ALLAH.has(bn)) return bn;
+  let w = b;
+  if (mf && w.endsWith('ه') && (mf.get(w.slice(0, -1) + 'ة') || 0) > (mf.get(w) || 0)) w = w.slice(0, -1) + 'ة';   // المدينه = المدينة
+  for (const s of PRON) {
+    if (w.length - s.length >= 3 && w.endsWith(s)) {
+      w = w.slice(0, -s.length);
+      if (w.endsWith('ت') && vocab && vocab.has(toN(w.slice(0, -1) + 'ة'))) w = w.slice(0, -1) + 'ة'; // صلاته → صلاة
+      break;
+    }
+  }
+  if (!NO_STEM.has(toN(w))) {
+    for (const s of PLUR) if (w.length - s.length >= 3 && w.endsWith(s)) { w = w.slice(0, -s.length); break; }
+  }
+  // nisba ي only; ة is kept on purpose (كتابة ≠ كتاب، رحمة ≠ رحم، قراءة ≠ قراء)
+  if (w.length >= 5 && w.endsWith('ي')) w = w.slice(0, -1);
+  return toN(w);
+}
+// ISRI root stemmer (Taghva et al. 2005), adapted to the normalized alphabet.
+const IS = {
+  p3: ['كال', 'بال', 'ولل', 'وال'], p2: ['ال', 'لل'], p1: ['ل', 'ب', 'ف', 'س', 'و', 'ي', 'ت', 'ن', 'ا'],
+  s3: ['تما', 'هما', 'تان', 'تين', 'كما'], s2: ['ون', 'ات', 'ان', 'ين', 'تن', 'كم', 'هن', 'نا', 'يا', 'ها', 'تم', 'كن', 'ني', 'وا', 'ما', 'هم'],
+  s1: ['ة', 'ه', 'ي', 'ك', 'ت', 'ا', 'ن']
+};
+function isri(w) {
+  if (w.length >= 6) { const p = IS.p3.find(x => w.startsWith(x)); if (p) w = w.slice(3); else if (w.length >= 5) { const q = IS.p2.find(x => w.startsWith(x)); if (q) w = w.slice(2); } }
+  else if (w.length >= 5) { const q = IS.p2.find(x => w.startsWith(x)); if (q) w = w.slice(2); }
+  if (w.length >= 6) { const s = IS.s3.find(x => w.endsWith(x)); if (s) w = w.slice(0, -3); else if (w.length >= 5) { const t = IS.s2.find(x => w.endsWith(x)); if (t) w = w.slice(0, -2); } }
+  else if (w.length >= 5) { const t = IS.s2.find(x => w.endsWith(x)); if (t) w = w.slice(0, -2); }
+  if (w.length >= 4 && w.startsWith('وو')) w = w.slice(1);
+  const suf1 = x => { const s = IS.s1.find(y => x.endsWith(y)); return s ? x.slice(0, -1) : x; };
+  const pre1 = x => { const p = IS.p1.find(y => x.startsWith(y)); return p ? x.slice(1) : x; };
+  const w4 = x => {
+    if (x[0] === 'م') return x.slice(1);
+    if (x[1] === 'ا') return x[0] + x.slice(2);
+    if ('اوي'.includes(x[2])) return x.slice(0, 2) + x[3];
+    if (x[3] === 'ة') return x.slice(0, 3);
+    x = suf1(x); if (x.length === 4) x = pre1(x); return x;
+  };
+  const w53 = x => {
+    if ('ات'.includes(x[2]) && x[0] === 'ا') return x[1] + x.slice(3);
+    if ('ايو'.includes(x[3]) && x[0] === 'م') return x.slice(1, 3) + x[4];
+    if ('اتم'.includes(x[0]) && x[4] === 'ة') return x.slice(1, 4);
+    if ('ميت'.includes(x[0]) && x[2] === 'ت') return x[1] + x.slice(3);
+    if ('مت'.includes(x[0]) && x[2] === 'ا') return x[1] + x.slice(3);
+    if ('او'.includes(x[2]) && x[4] === 'ة') return x.slice(0, 2) + x[3];
+    if ('ام'.includes(x[0]) && x[1] === 'ن') return x.slice(2);
+    if (x[3] === 'ا' && x[0] === 'ا') return x.slice(1, 3) + x[4];
+    if (x[4] === 'ن' && x[3] === 'ا') return x.slice(0, 3);
+    if (x[3] === 'ي' && x[0] === 'ت') return x.slice(1, 3) + x[4];
+    if (x[3] === 'و' && x[1] === 'ا') return x[0] + x[2] + x[4];
+    if (x[2] === 'ا' && x[1] === 'و') return x[0] + x.slice(3);
+    if (x[3] === 'ي' && x[2] === 'ا') return x.slice(0, 2) + x[4];
+    if (x[4] === 'ة' && x[1] === 'ا') return x[0] + x.slice(2, 4);
+    if (x[4] === 'ي' && x[2] === 'ا') return x.slice(0, 2) + x[3];
+    x = suf1(x); if (x.length === 5) x = pre1(x); return x;
+  };
+  const w54 = x => {
+    if ('اتم'.includes(x[0])) return x.slice(1);
+    if (x[4] === 'ة') return x.slice(0, 4);
+    if (x[2] === 'ا') return x.slice(0, 2) + x.slice(3);
+    return x;
+  };
+  const end5 = x => x.length === 4 ? w4(x) : x.length === 5 ? w54(x) : x;
+  const w6 = x => {
+    if (x.startsWith('است') || x.startsWith('مست')) return x.slice(3);
+    if (x[0] === 'م' && x[3] === 'ا' && x[5] === 'ة') return x.slice(1, 3) + x[4];
+    if (x[0] === 'ا' && x[2] === 'ت' && x[4] === 'ا') return x[1] + x[3] + x[5];
+    if (x[0] === 'ا' && x[3] === 'و' && x[2] === x[4]) return x[1] + x.slice(4);
+    if (x[0] === 'ت' && x[2] === 'ا' && x[4] === 'ي') return x[1] + x[3] + x[5];
+    x = suf1(x); if (x.length === 6) x = pre1(x); return x;
+  };
+  const w64 = x => {
+    if (x[0] === 'ا' && x[4] === 'ا') return x.slice(1, 4) + x[5];
+    if (x.startsWith('مت')) return x.slice(2);
+    return x;
+  };
+  const end6 = x => x.length === 5 ? end5(w53(x)) : x.length === 6 ? w64(x) : x;
+  if (w.length === 4) w = w4(w);
+  else if (w.length === 5) w = end5(w53(w));
+  else if (w.length === 6) w = end6(w6(w));
+  else if (w.length === 7) { w = suf1(w); if (w.length === 7) w = pre1(w); if (w.length === 6) w = end6(w6(w)); }
+  if (w.length > 3 && w.endsWith('ة')) w = w.slice(0, -1);
+  return toN(w);
+}
+const NO_ROOT = new Set(['علي', 'ام', 'مدين', 'قران', 'ايمان', 'ايه', 'ايات', 'انبياء', 'ملائكه', 'ايام', 'اسرائيل', 'اسرايل', 'ابراهيم', 'اسماعيل', 'اسحاق', 'يعقوب', 'يوسف', 'موسي', 'عيسي', 'مريم', 'سليمان', 'داود', 'فرعون', 'هارون', 'قارون', 'ادريس', 'الياس', 'اليسع', 'يونس', 'محمد', 'احمد'].map(w => toN(mnorm(w))));
+function rootOf(b, hz) {
+  const bn = toN(b);
+  if (hz || b.length < 3 || ALLAH.has(bn) || STOP.has(bn) || NO_ROOT.has(bn) || /\d|[a-z]/.test(b)) return null;
+  const r = isri(b);
+  return (r.length === 3 || r.length === 4) && !/ء/.test(r) ? r : null;
+}
+
+/* ---------- 5. Weighted Damerau-Levenshtein (Arabic-aware costs) ---------- */
+const CONFUSE = new Set(['ضظ', 'ظض', 'ذز', 'زذ', 'ذد', 'دذ', 'ثس', 'سث', 'ثت', 'تث', 'صس', 'سص', 'طت', 'تط', 'ظز', 'زظ', 'قك', 'كق', 'حه', 'هح', 'ءا', 'اء', 'عا', 'اع', 'يا', 'اي']);
+const SOFT_L = 'اويء';
+function wdist(a, b, max) {
+  const la = a.length, lb = b.length;
+  if (Math.abs(la - lb) > Math.ceil(max)) return max + 1;
+  let p2 = null, p1 = new Array(lb + 1), cur;
+  p1[0] = 0;
+  for (let j = 1; j <= lb; j++) p1[j] = p1[j - 1] + (SOFT_L.includes(b[j - 1]) ? 0.7 : 1);
+  for (let i = 1; i <= la; i++) {
+    cur = new Array(lb + 1);
+    const ca = a[i - 1], dc = SOFT_L.includes(ca) ? 0.7 : 1;
+    cur[0] = p1[0] + dc;
+    let rowMin = cur[0];
+    for (let j = 1; j <= lb; j++) {
+      const cb = b[j - 1];
+      const sub = ca === cb ? 0 : (CONFUSE.has(ca + cb) ? 0.5 : 1);
+      let v = Math.min(p1[j] + dc, cur[j - 1] + (SOFT_L.includes(cb) ? 0.7 : 1), p1[j - 1] + sub);
+      if (p2 && i > 1 && j > 1 && ca === b[j - 2] && a[i - 2] === cb) v = Math.min(v, p2[j - 2] + 0.8);
+      cur[j] = v;
+      if (v < rowMin) rowMin = v;
+    }
+    if (rowMin > max) return max + 1;
+    p2 = p1; p1 = cur;
+  }
+  return p1[lb];
+}
+function fuzzyMax(len) { return len <= 3 ? 0.5 : len <= 5 ? 1 : len <= 8 ? 1.5 : 2; }
+
+/* ---------- 6. Quran metadata, surah resolver & references ---------- */
+const SURAHS = ['الفاتحة', 'البقرة', 'آل عمران', 'النساء', 'المائدة', 'الأنعام', 'الأعراف', 'الأنفال', 'التوبة', 'يونس', 'هود', 'يوسف', 'الرعد', 'إبراهيم', 'الحجر', 'النحل', 'الإسراء', 'الكهف', 'مريم', 'طه', 'الأنبياء', 'الحج', 'المؤمنون', 'النور', 'الفرقان', 'الشعراء', 'النمل', 'القصص', 'العنكبوت', 'الروم', 'لقمان', 'السجدة', 'الأحزاب', 'سبأ', 'فاطر', 'يس', 'الصافات', 'ص', 'الزمر', 'غافر', 'فصلت', 'الشورى', 'الزخرف', 'الدخان', 'الجاثية', 'الأحقاف', 'محمد', 'الفتح', 'الحجرات', 'ق', 'الذاريات', 'الطور', 'النجم', 'القمر', 'الرحمن', 'الواقعة', 'الحديد', 'المجادلة', 'الحشر', 'الممتحنة', 'الصف', 'الجمعة', 'المنافقون', 'التغابن', 'الطلاق', 'التحريم', 'الملك', 'القلم', 'الحاقة', 'المعارج', 'نوح', 'الجن', 'المزمل', 'المدثر', 'القيامة', 'الإنسان', 'المرسلات', 'النبأ', 'النازعات', 'عبس', 'التكوير', 'الانفطار', 'المطففين', 'الانشقاق', 'البروج', 'الطارق', 'الأعلى', 'الغاشية', 'الفجر', 'البلد', 'الشمس', 'الليل', 'الضحى', 'الشرح', 'التين', 'العلق', 'القدر', 'البينة', 'الزلزلة', 'العاديات', 'القارعة', 'التكاثر', 'العصر', 'الهمزة', 'الفيل', 'قريش', 'الماعون', 'الكوثر', 'الكافرون', 'النصر', 'المسد', 'الإخلاص', 'الفلق', 'الناس'];
+const AYAH_COUNTS = [7, 286, 200, 176, 120, 165, 206, 75, 129, 109, 123, 111, 43, 52, 99, 128, 111, 110, 98, 135, 112, 78, 118, 64, 77, 227, 93, 88, 69, 60, 34, 30, 73, 54, 45, 83, 182, 88, 75, 85, 54, 53, 89, 59, 37, 35, 38, 29, 18, 45, 60, 49, 62, 55, 78, 96, 29, 22, 24, 13, 14, 11, 11, 18, 12, 12, 30, 52, 52, 44, 28, 28, 20, 56, 40, 31, 50, 40, 46, 42, 29, 19, 36, 25, 22, 17, 19, 26, 30, 20, 15, 21, 11, 8, 8, 19, 5, 8, 8, 11, 11, 8, 3, 9, 5, 4, 7, 3, 6, 3, 5, 4, 5, 6];
+const SURAH_ALIASES = {
+  'ياسين': 36, 'يسن': 36, 'بني اسرائيل': 17, 'بني اسرايل': 17, 'سبحان': 17, 'المؤمن': 40, 'حم السجده': 41, 'الدهر': 76,
+  'هل اتي': 76, 'تبارك': 67, 'عم': 78, 'عم يتساءلون': 78, 'التوحيد': 112, 'الصمد': 112, 'تبت': 111, 'اللهب': 111, 'القتال': 47,
+  'نون': 68, 'ن': 68, 'الملائكه': 35, 'براءه': 9, 'الحمد': 1, 'ام الكتاب': 1, 'السبع المثاني': 1, 'اقرا': 96, 'الشريعه': 45,
+  'الم نشرح': 94, 'الانشراح': 94, 'التطفيف': 83, 'الايلاف': 106, 'لايلاف': 106, 'النساء الصغري': 65, 'المنافقين': 63, 'الكافرين': 109,
+  'الزلزال': 99, 'صاد': 38, 'قاف': 50, 'المؤمنين': 23
+};
+const SURAH_KEYS = new Map();
+SURAHS.forEach((s, i) => {
+  const k = norm(s);
+  SURAH_KEYS.set(k, i + 1);
+  if (k.startsWith('ال') && k.length > 3) SURAH_KEYS.set(k.slice(2), i + 1);
+});
+Object.keys(SURAH_ALIASES).forEach(k => {
+  const n = norm(k);
+  SURAH_KEYS.set(n, SURAH_ALIASES[k]);
+  if (n.startsWith('ال') && n.length > 4 && !n.includes(' ') && !SURAH_KEYS.has(n.slice(2))) SURAH_KEYS.set(n.slice(2), SURAH_ALIASES[k]);   // «سورة لهب»، «سورة دهر»
+});
+SURAH_KEYS.set(norm('ال عمران'), 3);
+// resolve a (possibly misspelled) surah name to its number. known(word): true for words used in the index,
+// which are then never "corrected" into a surah name («الرقم» is not «الروم»)
+function resolveSurah(name, allowFuzzy, known) {
+  let k = norm(name).replace(/^سوره\s+/, '').trim();
+  if (!k) return 0;
+  if (SURAH_KEYS.has(k)) return SURAH_KEYS.get(k);
+  if (/^\d{1,3}$/.test(k)) { const n = +k; return n >= 1 && n <= 114 ? n : 0; }
+  if (allowFuzzy && k.length >= 4 && !(known && known(k))) {
+    let best = 0, bd = 9;
+    for (const [key, no] of SURAH_KEYS) {
+      if (key.length < 4) continue;
+      const d = wdist(k, key, 1);
+      if (d <= 1 && d < bd) { bd = d; best = no; }
+    }
+    return best;
+  }
+  return 0;
+}
+const FAMOUS_AYAHS = {
+  'ايه الكرسي': [2, 255, 255], 'ايه الدين': [2, 282, 282], 'ايه المداينه': [2, 282, 282], 'ايه النور': [24, 35, 35],
+  'خواتيم البقره': [2, 285, 286], 'خواتيم سوره البقره': [2, 285, 286], 'ايه الكلاله': [4, 176, 176], 'ايه المباهله': [3, 61, 61],
+  'ايه الوضوء': [5, 6, 6], 'ايه التطهير': [33, 33, 33], 'ايه القوامه': [4, 34, 34], 'ايات الصيام': [2, 183, 187]
+};
+// Named Quranic stories / passages -> ayah ranges (shown alongside text matches)
+const STORIES = [
+  [['موسي والخضر', 'الخضر', 'موسي والعبد الصالح'], 'قصة موسى والخضر', [[18, 60, 82]]],
+  [['ذو القرنين', 'ذي القرنين'], 'قصة ذي القرنين', [[18, 83, 98]]],
+  [['اصحاب الكهف', 'اهل الكهف', 'الفتيه'], 'قصة أصحاب الكهف', [[18, 9, 26]]],
+  [['صاحب الجنتين', 'الجنتين'], 'قصة صاحب الجنتين', [[18, 32, 44]]],
+  [['ياجوج وماجوج'], 'يأجوج ومأجوج', [[18, 94, 98], [21, 96, 97]]],
+  [['اصحاب السبت'], 'قصة أصحاب السبت', [[7, 163, 166]]],
+  [['قصه البقره', 'ذبح البقره', 'بقره بني اسرائيل'], 'قصة البقرة', [[2, 67, 73]]],
+  [['هاروت وماروت'], 'هاروت وماروت', [[2, 102, 102]]],
+  [['طالوت وجالوت', 'طالوت', 'جالوت'], 'قصة طالوت وجالوت', [[2, 246, 251]]],
+  [['الذي مر علي قريه', 'عزير'], 'الذي مر\u0651 على قرية', [[2, 259, 259]]],
+  [['السامري', 'العجل', 'السامري والعجل'], 'قصة السامري والعجل', [[20, 85, 97]]],
+  [['الهدهد', 'ملكه سبا', 'بلقيس', 'سليمان والهدهد'], 'سليمان والهدهد وملكة سبأ', [[27, 20, 44]]],
+  [['قارون'], 'قصة قارون', [[28, 76, 82]]],
+  [['اصحاب الاخدود', 'الاخدود'], 'أصحاب الأخدود', [[85, 4, 10]]],
+  [['اصحاب الفيل', 'ابرهه'], 'أصحاب الفيل', [[105, 1, 5]]],
+  [['داود والخصم', 'الخصم', 'نبا الخصم'], 'قصة داود والخصم', [[38, 21, 25]]],
+  [['يونس والحوت', 'صاحب الحوت', 'ذو النون'], 'يونس في بطن الحوت', [[37, 139, 148], [21, 87, 88]]],
+  [['مؤمن ال فرعون'], 'مؤمن آل فرعون', [[40, 28, 45]]],
+  [['اصحاب القريه'], 'أصحاب القرية', [[36, 13, 29]]],
+  [['وعد الاخره', 'زوال اسرائيل', 'زوال اسرايل', 'الافسادتين', 'الافساد في الارض'], 'وعد الآخرة والإفسادتان', [[17, 4, 8]]],
+  [['وصايا لقمان', 'لقمان'], 'وصايا لقمان', [[31, 12, 19]]]
+];
+const STORY_MAP = new Map();
+STORIES.forEach(([keys, label, ranges]) => keys.forEach(k => STORY_MAP.set(norm(k), { label, ranges })));
+function storyOf(q) {
+  const n0 = norm(q).trim(), n = n0.replace(/^(قصه|قصص)\s+/, '');
+  return STORY_MAP.get(n0) || STORY_MAP.get(n) || null;
+}
+
+/* Detects references: "2:255", "البقرة 255", "سورة البقرة آية 255-257", "الآية 255 من البقرة",
+   "سورة يوسف", "الربا في سورة البقرة", famous names ("آية الكرسي"). */
+// words that only describe a surah search («تفسير سورة البقرة», «فضل سورة الملك»)
+const SURAH_META = new Set(['تفسير', 'شرح', 'فضل', 'مقاصد', 'معاني', 'اسرار', 'خصائص', 'مقدمه', 'دروس', 'درس', 'نظرات', 'نظره', 'في', 'من', 'عن', 'حول', 'كل', 'مداخل'].map(w => toN(mnorm(w))));
+const metaOnly = t => t.split(' ').every(w => SURAH_META.has(w) || SOFT.has(w) || STOP.has(w));
+function parseReference(q, opts) {
+  const r = parseRef0(q, opts);
+  if (r) return r;
+  // «تفسير آية الكرسي», «شرح سورة البقرة 255»: the same reference behind a describing word
+  const n = norm(asciiDigits(q));
+  const m = n.match(/^((?:تفسير|شرح|فضل|معني|معاني|مقاصد|اسرار)\s+)+(.+)$/);
+  return m ? parseRef0(m[2], opts) : null;
+}
+function parseRef0(q, opts) {
+  const known = opts && opts.known;
+  const raw = asciiDigits(q).trim();
+  let m = raw.match(/^(\d{1,3})\s*[:\/]\s*(\d{1,3})(?:\s*[-–]\s*(\d{1,3}))?$/);
+  if (m) { const s = +m[1]; if (s >= 1 && s <= 114) return mkRef(s, +m[2], m[3] ? +m[3] : +m[2]); }
+  const n = norm(raw);
+  if (!n) return null;
+  if (FAMOUS_AYAHS[n]) { const f = FAMOUS_AYAHS[n]; return Object.assign(mkRef(f[0], f[1], f[2]), { famous: true }); }
+  m = n.match(/^(?:سوره\s+)?(.+?)\s+(?:(?:من\s+)?(?:الايه|ايه|الايات|ايات|اية|رقم)\s+|من\s+)?(\d{1,3})(?:\s+(?:الي\s+)?(\d{1,3}))?$/);
+  // without «سورة» or «آية», a word that the index uses («الرقم 19», «العمر 40») is not a misspelt surah
+  if (m) {
+    const explicit = /^سوره\s/.test(n) || /\s(الايه|ايه|الايات|ايات|اية)\s/.test(n);
+    const s = /^\d+$/.test(m[1]) && !explicit ? 0 : resolveSurah(m[1], true, explicit ? null : known);   // «19 30» is two numbers
+    if (s && (explicit || +m[2] <= AYAH_COUNTS[s - 1])) return mkRef(s, +m[2], m[3] ? +m[3] : +m[2]);
+  }
+  m = n.match(/^(?:الايه|ايه|الايات|ايات)\s+(?:رقم\s+)?(\d{1,3})(?:\s+(?:الي\s+)?(\d{1,3}))?\s+(?:من\s+)?(?:سوره\s+)?(.+)$/);
+  if (m) { const s = resolveSurah(m[3], true); if (s) return mkRef(s, +m[1], m[2] ? +m[2] : +m[1]); }
+  m = n.match(/^سوره\s+(.+)$/);
+  if (m) {
+    const s = resolveSurah(m[1], true);
+    if (s) return { kind: 'surah', surah: s };
+    // "سورة البقرة الربا" → scope; "سورة البقرة آية الكرسي" → the verse; "سورة البقرة تفسير" → the surah
+    const parts = m[1].split(' ');
+    for (let k = Math.min(2, parts.length - 1); k >= 1; k--) {
+      const s2 = resolveSurah(parts.slice(0, k).join(' '), false);
+      if (s2) return scopeOrSurah(s2, parts.slice(k).join(' '));
+    }
+  }
+  m = n.match(/^(.+?)\s+(?:في\s+)?سوره\s+(.+)$/);
+  if (m) { const s = resolveSurah(m[2], true); if (s) return scopeOrSurah(s, m[1].replace(/\s+في$/, '')); }
+  return null;
+}
+function scopeOrSurah(s, rest) {
+  if (FAMOUS_AYAHS[rest] && FAMOUS_AYAHS[rest][0] === s) { const f = FAMOUS_AYAHS[rest]; return Object.assign(mkRef(f[0], f[1], f[2]), { famous: true }); }
+  if (!rest || metaOnly(rest)) return { kind: 'surah', surah: s };
+  return { kind: 'scope', surah: s, rest };
+}
+function mkRef(s, a, b) {
+  if (b < a) { const t = a; a = b; b = t; }                     // «2:257-255»
+  const max = AYAH_COUNTS[s - 1];
+  if (a < 1 || a > max) return { kind: 'badref', surah: s, from: a, to: b, max };
+  return { kind: 'ref', surah: s, from: a, to: Math.max(a, Math.min(b, max)) };
+}
+
+/* ---------- 7. Quran text handling (Uthmani → searchable forms) ---------- */
+// Hamza written on a tatweel (ش\u064Eي\u06E1\u0640\u0654\u0657ا، ي\u064Eس\u06E1\u0640\u064E\u0654ل\u064Fون\u064E، ب\u0650\u0640\u064E\u0654اي\u064E\u0670ت\u0650ن\u064Eا): pick the modern seat by vowel priority
+const RE_HZ = /([\u0621-\u064A\u0671]?)([\u064B-\u065F\u06D6-\u06ED]*)\u0640([\u064B-\u065F\u06D6-\u06ED]*)\u0654([\u064B-\u065F\u06D6-\u06ED]*)([\u0621-\u064A\u0671]?)/g;
+function hamzaOnTatweel(word) {
+  if (!word.includes('\u0654')) return word;
+  return word.replace(RE_HZ, (all, pl, pm, a, b, next, off) => {
+    const hv = a + b, initial = off === 0 && (pl === '' || 'بلفوك'.includes(pl));
+    const kas = /[\u0650\u064D\u0656]/, dam = /[\u064F\u064C\u065E\u0657]/;
+    let seat;
+    if (initial) seat = (next === 'ا') ? '' : 'ا';
+    else if (kas.test(hv) || kas.test(pm) || (pl === 'ي' && /[\u0652\u06E1]/.test(pm))) seat = 'ي';
+    else if (dam.test(hv) && !/\u064B/.test(hv)) seat = 'و';
+    else if (next === 'ا' && /\u064E/.test(hv)) seat = '';
+    else seat = 'ا';
+    return pl + pm + seat + next;
+  });
+}
+// Two spellings per ayah: v1 drops the dagger alef (الرحمن، ذلك، إله), v2 reads it as ا (العالمين، السماوات، الصلاة)
+function quranForms(text) {
+  let t = String(text).replace(/[\u06DD\u06DE\u06E9]/g, ' ').replace(/\s+/g, ' ').trim();
+  t = t.replace(/\s+(?=[\u0670\u064B-\u065F])/g, '');                                     // «إ\u0650ب\u06E1ر\u064E \u0670ه\u0650يم\u064E» is one word
+  t = t.replace(/(^|\s)((?:[وف]\u064E?)?)ي\u064E?\u0640?\u0670\u0653?/g, '$1$2يا ');                                  // vocative ي\u0670\u0653أيها → يا أيها
+  t = t.split(' ').map(hamzaOnTatweel).join(' ');
+  t = t.replace(/\u06E7/g, 'ي');
+  const v1 = t.replace(/\u0670/g, '');
+  const v2 = t.replace(/و\u0670/g, 'ا').replace(/ى\u0670(?=[\u064B-\u065F\u06D6-\u06ED]*[ء-يٱ])/g, 'ا')
+              .replace(/ى\u0670/g, 'ى').replace(/\u0670/g, 'ا');
+  const fix = s => norm(s).replace(/ءا/g, 'ا').replace(/اا+/g, 'ا');
+  return [fix(v1), fix(v2)];
+}
+
+/* ---------- 8. Helpers for the data ---------- */
+function linkSeconds(link) {
+  if (!link) return null;
+  const m = String(link).match(/[?&#](?:t|start)=([0-9hms]+)/);
+  if (!m) return null;
+  const v = m[1];
+  if (/^\d+$/.test(v)) return +v;
+  const h = /(\d+)h/.exec(v), mi = /(\d+)m/.exec(v), s = /(\d+)s/.exec(v);
+  return (h ? +h[1] * 3600 : 0) + (mi ? +mi[1] * 60 : 0) + (s ? +s[1] : 0);
+}
+// "8.12" = 8:12, "15.4" = 15:40, "1.02.14" = 1:02:14
+function minuteSeconds(v) {
+  v = asciiDigits(String(v || '')).trim().replace(/[:٫,]/g, '.');
+  if (!/^\d+(\.\d+){0,2}$/.test(v)) return null;
+  const p = v.split('.');
+  const sec = x => { if (x == null) return 0; let n = x.length === 1 ? +x * 10 : +x.slice(0, 2); return Math.min(n, 59); };
+  if (p.length === 1) return +p[0] * 60;
+  if (p.length === 2) return +p[0] * 60 + sec(p[1]);
+  return +p[0] * 3600 + Math.min(+p[1], 59) * 60 + sec(p[2]);
+}
+function fmtTime(sec) {
+  if (sec == null || isNaN(sec)) return '';
+  sec = Math.max(0, Math.round(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  const pad = x => String(x).padStart(2, '0');
+  return h ? h + ':' + pad(m) + ':' + pad(s) : m + ':' + pad(s);
+}
+function youtubeId(url) {
+  const m = String(url || '').match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function linkAt(link, sec) {
+  if (!link || !/^https?:\/\//i.test(link)) return '';
+  if (sec == null || linkSeconds(link) != null) return link;
+  return link + (link.includes('?') ? '&' : '?') + 't=' + Math.round(sec);
+}
+function parseDate(s) {
+  s = asciiDigits(String(s || '')).trim();
+  let m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+  if (m) return mkDate(+m[1], +m[2], +m[3]);
+  m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
+  if (m) return mkDate(+m[3], +m[2], +m[1]);
+  return null;
+}
+function mkDate(y, mo, d) {
+  if (mo > 12 && d <= 12) { const t = mo; mo = d; d = t; }
+  if (y < 1900 || y > 2100 || mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  return { y, m: mo, d, ts: Date.UTC(y, mo - 1, d) };
+}
+// How a verse is mentioned in a lesson (column «نوع الذكر» of the index sheet):
+// o = تفسير (أصلي), m = تفسير رئيسي, s = تفسير فرعي, r = تلاوة / تكرار, c = استشهاد عابر, '' = not given
+function mentionKind(v) {
+  const t = norm(v || '');
+  if (!t) return '';
+  if (/استشهاد|عابر/.test(t)) return 'c';
+  if (/تلاوه|تكرار/.test(t)) return 'r';
+  if (/فرعي/.test(t)) return 's';
+  if (/ر[يء]يسي/.test(t)) return 'm';
+  if (/اصلي/.test(t)) return 'o';
+  if (/تفسير|شرح/.test(t)) return 'm';
+  return '?';
+}
+// explaining a verse ranks above re-reading it or quoting it in passing
+const MENTION_WEIGHT = { o: 1, m: 1, s: 0.85, r: 0.6, c: 0.7 };
+
+function cleanLesson(t) {
+  t = String(t || '').trim();
+  t = t.replace(/^["'\s]+|["'\s]+$/g, '');
+  t = t.replace(/^[-–—\s]*\d{1,4}\s*[-–—]+\s*(?=(?:ال[أا]ستاذ|الشيخ)?\s*بس)/, '');   // episode number before the name
+  t = t.replace(/^(?:ال[أا]ستاذ|الشيخ)\s*(?=بس+\u0651?ا+م\s*جر+\u0651?ا+ر\s*(?:[-–—:]|تفسير))/, '');
+  t = t.replace(/^بس+[\u0651]?ا+م\s*جر+[\u0651]?ا+ر\s*[-–—:]*\s*/, '');
+  t = t.replace(/^تفسير\s*[-–—]+\s*/, '').replace(/^تفسير\s*-\s*/, '');
+  t = t.replace(/[-–—\/\s]*\d{1,4}\s*[-–\/\s]\s*\d{1,2}\s*[-–\/\s]\s*\d{1,4}\s*-?\s*م?\s*(?:-?\s*flv\d?)?[-–—\s]*$/i, '');   // trailing date
+  t = t.replace(/[-–—\/\s]*\/{2,}[\s\-\/]*$/, '').replace(/[-–—\/\s]+$/, '');
+  t = t.replace(/\s*\/{2,}\s*/g, ' ').replace(/-{2,}/g, ' - ').replace(/\s*-\s*$/, '').replace(/^\s*-\s*/, '');
+  t = t.replace(/"\s*([^"]+?)\s*"/g, '«$1»').replace(/"/g, '');
+  t = t.replace(/^\(([^()]+)\)/, '«$1»');   // a title quoted with parentheses
+  t = t.replace(/\s+/g, ' ').trim();
+  return t || 'درس';
+}
+
+/* ---------- 9. Index ---------- */
+const K1 = 1.2, B = 0.55;
+const TIER = { exact: 0, syn: 1, stem: 2, fuzzy: 3, prefix: 4, root: 5, verse: 6, related: 7 };
+const TIER_NAMES = Object.keys(TIER);
+
+function Index() {
+  this.docs = []; this.EX = new Map(); this.BA = new Map(); this.ST = new Map(); this.RT = new Map();
+  this.avg = 1; this.N = 0; this.lemma = new Map(); this.syn = new Map(); this.fam = new Map(); this.vocab = null; this.analysis = new Map();
+}
+function push(map, k, id) { let a = map.get(k); if (!a) map.set(k, a = []); a.push(id); }
+
+Index.prototype.build = function (docs) {
+  // docs: [{id, text, ...}] ; the index adds `toks`, `nn` (normalized text), `bn` (base text)
+  const t0 = Date.now();
+  this.docs = docs; this.N = docs.length;
+  const artDf = new Map(), vocab = new Set(), al = new Set(), artM = new Map();
+  artDf.al = al;
+  for (const d of docs) {
+    d.toks = tokenize(d.text);
+    for (const tk of d.toks) {
+      vocab.add(tk.n);
+      let a = tk.m;
+      if (!(PROTECT.has(tk.n) && !(tk.hz && HAMZA_SPLIT.has(tk.n))) && !tk.ha && a.length >= 4 && (a.startsWith('ال') || a.startsWith('لل'))) a = a.slice(2);
+      const k = toN(a); artDf.set(k, (artDf.get(k) || 0) + 1);
+      if (a !== tk.m && !tk.ha) al.add(k);
+      artM.set(a, (artM.get(a) || 0) + 1);
+    }
+  }
+  this.artDf = artDf; this.vocab = vocab; this.artM = artM;
+  let total = 0;
+  for (const d of docs) {
+    d.toks.forEach((tk, ti) => {
+      const an = this.analyze(tk.m, tk.hz, tk.ha, ti === 0, tk.wa);
+      tk.base = an.base; tk.stem = an.stem; tk.root = an.root;
+      push(this.EX, tk.ha ? tk.n + '@' : tk.n, d.id); push(this.BA, an.base, d.id); push(this.ST, an.stem, d.id);
+      if (an.root) push(this.RT, an.root, d.id);
+      if (tk.alt) {
+        const altM = tk.alt, ab = toN(baseOf(altM, artDf));
+        tk.altBase = ab;
+        if (altM !== tk.n) push(this.EX, altM, d.id);
+        if (ab !== an.base) push(this.BA, ab, d.id);
+      }
+    });
+    d.len = d.toks.length || 1; total += d.len;
+    d.nn = d.toks.map(t => t.n).join(' ');
+    d.bn = d.toks.map(t => t.base).join(' ');
+  }
+  this.avg = total / Math.max(1, docs.length);
+  // a root shared by a single word form adds no recall, only risk → drop it
+  const rootForms = new Map();
+  for (const d of docs) for (const tk of d.toks) if (tk.root) { let s = rootForms.get(tk.root); if (!s) rootForms.set(tk.root, s = new Set()); s.add(tk.stem); }
+  for (const [r, s] of rootForms) if (s.size < 2) this.RT.delete(r);
+  for (const d of docs) for (const tk of d.toks) if (tk.root && !this.RT.has(tk.root)) tk.root = null;
+  // lemma families & synonyms
+  LEMMA_GROUPS.forEach((g, gi) => g.split(' ').forEach(w => { const k = norm(w); if (!this.lemma.has(k)) this.lemma.set(k, []); this.lemma.get(k).push(gi); }));
+  SYNONYMS.forEach((g, gi) => g.forEach(p => { const k = this.baseText(p); if (!this.syn.has(k)) this.syn.set(k, []); this.syn.get(k).push(gi); }));
+  FAMILIES.forEach((g, gi) => g.split(' ').forEach(w => { const k = norm(w); if (!this.fam.has(k)) this.fam.set(k, []); this.fam.get(k).push(gi); }));
+  this.baKeys = [...this.BA.keys()];
+  this.exSorted = [...this.EX.keys()].sort();
+  this.buildMs = Date.now() - t0;
+  return this;
+};
+Index.prototype.surfaceOf = function (key) {
+  const post = this.BA.get(key);
+  if (!post) return key;
+  const m = new Map();
+  for (const id of post.slice(0, 200)) for (const tk of this.docs[id].toks) if (tk.base === key) m.set(tk.m, (m.get(tk.m) || 0) + 1);
+  let best = key, n = 0; m.forEach((c, f) => { if (c > n) { n = c; best = f; } });
+  return best;
+};
+// base-form of a whole phrase (query side)
+Index.prototype.baseText = function (s) {
+  return tokenize(s).map((t, i) => this.analyze(t.m, t.hz, t.ha, i === 0).base).join(' ');
+};
+Index.prototype.analyze = function (m, hz, ha, first, wa) {
+  const key = hz || ha || first || wa ? m + (hz ? '#' : '') + (ha ? '@' : '') + (first ? '^' : '') + (wa ? '!' : '') : m;
+  let an = this.analysis.get(key);
+  if (an) return an;
+  const b = baseOf(m, this.artDf, ha, first, hz, wa);
+  const kept = first && b === m && (m[0] === 'و' || m[0] === 'ف') && m !== baseOf(m, this.artDf, ha, false, hz, wa);
+  // «ألحد», «ألسنة»: their own key, so that neither «الحد» nor a typo like «الالحد» lands on them
+  const bn = toN(b), mn = toN(m);
+  if (!ha && BARE_OWN.has(bn) && mn.endsWith(bn) && /^[وف]?[بلك]?$/.test(mn.slice(0, mn.length - bn.length))) {
+    an = { base: bn + '~', stem: bn + '~', root: null };   // «ربا»، «وربا»، «لربا» — not «الربا»، «بالربا»، «للربا»
+    this.analysis.set(key, an);
+    return an;
+  }
+  an = { base: bn + (ha ? '@' : ''), stem: lightStem(b, this.vocab, this.artM) + (ha ? '@' : ''), root: kept ? null : rootOf(b, hz || ha) };
+  this.analysis.set(key, an);
+  return an;
+};
+function swapFinal(w) {
+  if (w.length < 3) return null;
+  const c = w[w.length - 1];
+  return c === 'ا' ? w.slice(0, -1) + 'ي' : c === 'ي' ? w.slice(0, -1) + 'ا' : null;
+}
+function idf(N, df) { return Math.log(1 + (N - df + 0.5) / (df + 0.5)); }
+function uniqDf(post) { let c = 0, last = -1; for (const x of post) if (x !== last) { c++; last = x; } return c; }
+
+/* ---------- 10. Query parsing ---------- */
+function parseQuery(q) {
+  q = asciiDigits(String(q || '')).replace(/[\u200B-\u200F\u2060\uFEFF]/g, '').replace(/\s+(?=[\u064B-\u065F\u0670])/g, '');
+  const titled = /[«»]/.test(q);
+  const phrases = [], excludes = [];
+  q = q.replace(/["«»“”„]([^"«»“”„]+)["«»“”„]/g, (_, p) => { phrases.push(p); return ' ' + p + ' '; });
+  if (!titled) q = q.replace(/(^|\s)[-–]([^\s]+)/g, (all, a, w, at, str) => {
+    if (/^\d/.test(w) && /\d\s*$/.test(str.slice(0, at))) return all;
+    excludes.push(w); return a;
+  });
+  q = q.replace(/["«»“”„]/g, ' ');
+  const toks = tokenize(q);
+  return { text: q.trim(), toks, phrases, excludes };
+}
+
+/* ---------- 11. Search ---------- */
+/* opts: { typing:bool, filter:(doc)=>bool, related:bool, quran:QuranIndex, verseDocs:Map("s:a"→[docId]) } */
+Index.prototype.search = function (query, opts) {
+  opts = opts || {};
+  const t0 = performance.now();
+  const pq = parseQuery(query);
+  const N = this.N;
+  // dedupe terms by normalized form, keep order
+  const seen = new Set(), terms = [];
+  for (const t of pq.toks) { if (seen.has(t.n)) continue; seen.add(t.n); terms.push(t); }
+  const info = { terms: [], partial: false, corrections: [], expansions: [], ms: 0, fuzzyUsed: false };
+  if (!terms.length) return { hits: [], info };
+  const stopT = t => isStopWord(t.n) || (!!t.alt && isStopWord(t.alt));
+  const allStop = terms.every(t => stopT(t) || SOFT.has(t.n));
+  const T = terms.length;
+  const acc = new Map();
+  const hl = { exact: new Set(), syn: new Set(), stem: new Set(), root: new Set(), fuzzy: new Set(), prefix: new Set() };
+
+  terms.forEach((t, i) => {
+    // typed without the hamza seat («عايشة، سوال، مسوولية»): search the spelling with ء when that is the commoner one
+    let typed = null;
+    if (!stopT(t) && t.n.length >= 3) {
+      const dfOf = (m, hz) => uniqDf(this.BA.get(this.analyze(m, hz, t.ha, i === 0, t.wa).base) || []);
+      let best = null, bestDf = dfOf(t.m, t.hz);
+      for (let j = 1; j < t.m.length; j++) if (t.m[j] === 'ي' || t.m[j] === 'و') {
+        const v = t.m.slice(0, j) + 'ء' + t.m.slice(j + 1), dv = this.EX.has(toN(v)) || this.BA.has(toN(v)) ? dfOf(v, true) : 0;
+        if (dv > bestDf) { best = v; bestDf = dv; }
+      }
+      if (best) { typed = t.n; t = Object.assign({}, t, { m: best, n: toN(best), hz: true, alt: null }); }
+    }
+    const an = this.analyze(t.m, t.hz, t.ha, i === 0, t.wa);
+    const isStop = stopT(t) && !allStop, isSoft = SOFT.has(t.n) && !allStop;
+    const last = i === T - 1;
+    const alts = [];
+    const add = (idx, key, w, tier, cap) => { if (key) alts.push({ idx, key, w, tier, cap }); };
+    const ownWord = k => (this.artDf.al && this.artDf.al.has(k)) || PROTECT.has(k) || STOP.has(k) || NO_STEM.has(k) || NO_ROOT.has(k) || PARTICLE.test(k);   // كتاب، لبنان
+    add('EX', t.ha ? t.n + '@' : t.n, 1, 'exact');
+    if (typed) add('EX', typed, 1, 'exact');
+    add('BA', an.base, 0.97, 'exact');
+    if (an.base.endsWith('~')) add('BA', an.base.slice(0, -1), 0.97, 'exact');   // «ربا» typed without «ال»: both words
+    if (!t.ha && an.base.length >= 2 && !/^(وال|فال|بال|كال)/.test(an.base)) for (const c of COMPOUND) if (this.BA.has(c + an.base) && !(this.artDf.al && this.artDf.al.has(c + an.base))) add('BA', c + an.base, 0.95, 'exact', true);
+    if (!t.ha && !isStop && an.base.length >= 3 && !an.base.startsWith('ال')) for (const c of PREP) { const k = c + an.base; if (this.BA.has(k) && !ownWord(k)) add('BA', k, 0.9, 'exact', true); }
+    if (!t.ha && !isStop && /^[وف]?[بل]/.test(an.base) && !ownWord(an.base)) {
+      const r = an.base.replace(/^[وف]?[بل]/, '');
+      if (r.length >= 3 && !isStopWord(r) && this.BA.has(r) && uniqDf(this.BA.get(r)) > uniqDf(this.BA.get(an.base) || [])) add('BA', r, 0.85, 'exact', true);
+    }   // not «الوالدين» for «دين»
+    if (t.alt) { add('EX', t.alt, 1, 'exact'); const ab = this.analyze(t.alt, t.hz, false, i === 0).base; if (ab !== an.base) add('BA', ab, 0.97, 'exact'); }
+    // query-side clitic alternatives (و/ف prefix typed by the user)
+    if (t.m.length >= 4 && 'وف'.includes(t.m[0]) && !(i === 0 && an.base === t.n)) { const alt = this.analyze(t.m.slice(1)).base; if (alt !== an.base) add('BA', alt, 0.85, 'exact'); }
+    // spelling variant of a final alef (الزنا / الزنى، الربا) — not while the word is still being typed
+    // only as a recovery for a spelling that is absent from the data — never ربا → ربي ("my Lord")
+    const sw = ((opts.typing && last) || this.BA.has(an.base) || this.EX.has(t.n)) ? null : swapFinal(an.base);
+    if (sw) add('BA', sw, 0.9, 'exact');
+    if (!isStop) {
+      add('ST', an.stem, 0.72, 'stem');
+      (this.fam.get(an.base) || this.fam.get(an.stem) || []).forEach(gi => FAMILIES[gi].split(' ').forEach(w => { const k = norm(w); if (k !== an.base) add('BA', k, 0.74, 'stem'); }));
+      (this.lemma.get(an.base) || []).forEach(gi => LEMMA_GROUPS[gi].split(' ').forEach(w => { const k = norm(w); if (k !== an.base) add('BA', k, 0.8, 'syn'); }));
+      (this.syn.get(an.base) || []).forEach(gi => SYNONYMS[gi].forEach(p => { if (!p.includes(' ')) { const k = this.analyze(p).base; if (k !== an.base) add('BA', k, 0.78, 'syn'); } }));
+      if (an.root && t.n.length >= 3 && opts.roots !== false) add('RT', an.root, 0.42, 'root');
+      const known = (this.BA.get(an.base) || this.EX.get(t.n));
+      const knownDf = known ? uniqDf(known) : (alts.some(a => a.tier !== 'exact' && a.idx === 'BA' && this.BA.has(a.key)) ? 1 : 0);
+      // search-as-you-type completion of the last word
+      let completions = [];
+      if (opts.typing && last && t.n.length >= 2 && knownDf < 3) {
+        completions = this.prefix(t.n, 24).filter(k => k !== t.n);
+        completions.forEach(k => add('EX', k, 0.5 * Math.sqrt(t.n.length / k.length), 'prefix'));
+      }
+      // typo tolerance when the word is unknown in the corpus
+      if (!knownDf && !completions.length && !(sw && this.BA.has(sw)) && !/^\d+$/.test(t.n) && t.n.length >= 3) {
+        const cands = this.fuzzy(an.base);
+        cands.forEach((c, ci) => add('BA', c.key, 0.62 * (1 - c.d / (an.base.length + 1)) * (ci === 0 ? 1 : 0.5), 'fuzzy'));
+        if (cands.length) { info.fuzzyUsed = true; info.corrections.push({ from: t.n, to: cands[0].key, show: this.surfaceOf(cands[0].key) }); }
+      }
+    }
+    info.terms.push({ n: t.n, base: an.base, stem: an.stem, root: an.root, stop: isStop || isSoft });
+    const own = this.BA.get(an.base) || this.EX.get(t.n);
+    const ownIdf = own ? idf(N, uniqDf(own)) : Infinity;
+    for (const alt of alts) {
+      const post = this[alt.idx].get(alt.key);
+      if (!post) continue;
+      hl[alt.tier] && hl[alt.tier].add(alt.idx + ':' + alt.key);
+      const df = uniqDf(post), w = alt.w * (alt.tier === 'exact' && !alt.cap ? idf(N, df) : Math.min(idf(N, df), ownIdf)) * (isStop ? 0.15 : isSoft ? 0.5 : 1);
+      for (let p = 0; p < post.length;) {
+        const d = post[p]; let tf = 0;
+        while (p < post.length && post[p] === d) { tf++; p++; }
+        const doc = this.docs[d];
+        const sc = w * (tf * (K1 + 1)) / (tf + K1 * (1 - B + B * doc.len / this.avg));
+        let r = acc.get(d);
+        if (!r) { r = { s: new Float64Array(T), tier: new Int8Array(T).fill(-1) }; acc.set(d, r); }
+        const tr = TIER[alt.tier];
+        // prefer better tier; within same tier prefer higher score
+        if (r.tier[i] === -1 || tr < r.tier[i]) r.tier[i] = tr;
+        if (sc > r.s[i]) r.s[i] = sc;
+      }
+    }
+  });
+
+  let required = terms.map((t, i) => ((stopT(t) || SOFT.has(t.n)) && !allStop) ? -1 : i).filter(i => i >= 0);
+  const softIdx = terms.map((t, i) => (SOFT.has(t.n) && !allStop ? i : -1)).filter(i => i >= 0);
+  const dfOf = i => uniqDf(this.BA.get(info.terms[i].base) || this.EX.get(terms[i].n) || []);
+  if (softIdx.length && required.length && required.every(i => dfOf(i) >= N * 0.02)) required = required.concat(softIdx).sort((a, b) => a - b);
+  const fullN = pq.toks.map(t => t.n).join(' ');
+  const fullB = pq.toks.map(t => this.analyze(t.m, t.hz).base).join(' ');
+  const exclB = pq.excludes.map(e => this.baseText(e)).filter(Boolean);
+  const phrW = pq.phrases.map(p => tokenize(p).map(t => [t.n, t.alt || t.n])).filter(w => w.length);
+  const filter = opts.filter;
+
+  const collect = (minCov) => {
+    const out = [];
+    for (const [d, r] of acc) {
+      let cov = 0, worst = 0, sum = 0;
+      for (const i of required) if (r.tier[i] >= 0) { cov++; if (r.tier[i] > worst) worst = r.tier[i]; }
+      if (cov < minCov) continue;
+      const doc = this.docs[d];
+      if (filter && !filter(doc)) continue;
+      if (exclB.length && exclB.some(e => (' ' + doc.bn + ' ').includes(' ' + e + ' '))) continue;
+      if (phrW.length && !phrW.every(w => phraseIn(doc, w))) continue;
+      for (let i = 0; i < T; i++) sum += r.s[i];
+      let bonus = 1;
+      if (doc.nn === fullN || doc.bn === fullB) bonus = 2.2;
+      else if (T >= 2 && ((' ' + doc.nn + ' ').includes(' ' + fullN + ' ') || (' ' + doc.bn + ' ').includes(' ' + fullB + ' '))) bonus = 1.6;
+      else if (doc.nn.startsWith(fullN) || doc.bn.startsWith(fullB)) bonus = 1.25;
+      else if (T >= 2 && cov === required.length) bonus = 1 + 0.15 * proximity(doc, info.terms);
+      const covF = required.length ? cov / required.length : 1;
+      out.push({ id: d, doc, score: sum * bonus * covF * covF, tier: worst, cov, tiers: Array.from(r.tier) });
+    }
+    return out;
+  };
+  let hits = collect(required.length);
+  if (!hits.length && required.length >= 2) {
+    hits = collect(Math.max(1, Math.ceil(required.length / 2))).filter(h => h.tier < TIER.root);
+    if (hits.length) info.partial = true;
+  }
+
+  // adaptive: when there are plenty of direct matches, hold back same-root matches (user can reveal them)
+  // Same-root matches are shown by default only when the user typed the bare root (صبر، خلق)
+  // or when little else matched; otherwise (الأخلاق → الخلق) they stay one click away.
+  const direct = hits.filter(h => h.tier < TIER.root).length;
+  const bareRoot = info.terms.every(t => t.stop || !t.root || t.base === t.root || t.stem === t.root);
+  if (opts.roots !== 'all' && direct >= (bareRoot ? 15 : 3)) {
+    const before = hits.length;
+    hits = hits.filter(h => h.tier !== TIER.root);
+    info.rootHidden = before - hits.length;
+    info.rootLetters = info.terms.filter(t => t.root && !t.stop).map(t => t.root).join('، ');
+  }
+
+  // --- Ayah-text matches: entries whose ayah contains the query (even if the quoted fragment doesn't)
+  const have = new Set(hits.map(h => h.id));
+  if (opts.quran && opts.verseDocs && required.length) {
+    const vq = opts.quran.search(terms.filter((t, i) => required.includes(i)).map(t => t.n), fullN);
+    info.verses = vq;
+    const strong = vq.filter(v => v.phrase);
+    const use = (strong.length && strong.length <= 15) ? strong : (vq.length <= 4 && required.length >= 3 ? vq : []);
+    // a Quran quote with no indexed entries: drop the weak partial matches
+    if (info.partial && strong.length && required.length >= 3) { info.partialHidden = hits.length; hits = []; }
+    const topScore = hits.length ? Math.max(...hits.map(h => h.score)) : 10;
+    use.forEach(v => {
+      (opts.verseDocs.get(v.s + ':' + v.a) || []).forEach(id => {
+        if (have.has(id)) return;
+        const doc = this.docs[id];
+        if (filter && !filter(doc)) return;
+        if (exclB.length && exclB.some(e => (' ' + doc.bn + ' ').includes(' ' + e + ' '))) return;
+        have.add(id);
+        const strongMatch = v.phrase && required.length >= 3;
+        hits.push({ id, doc, score: topScore * (strongMatch ? 0.95 : 0.4), tier: strongMatch ? TIER.exact : TIER.verse, verse: true, tiers: [] });
+      });
+    });
+  }
+
+  // --- Concept expansion (related topics), shown after direct matches
+  if (opts.related !== false && !pq.phrases.length) {
+    const exp = this.expansions(fullB, fullN);
+    info.expansions = exp.terms;
+    if (exp.terms.length) {
+      const relScore = (hits.length ? Math.min(...hits.map(h => h.score)) : 1) * 0.5;
+      const perTerm = Math.max(4, Math.ceil(40 / exp.terms.length));
+      let relCount = 0;
+      exp.terms.forEach(({ text, w }) => {
+        const kb = this.baseText(text);
+        if (!kb) return;
+        const ids = this.phraseDocs(kb);
+        let termCount = 0;
+        ids.forEach(id => {
+          if (have.has(id) || relCount >= 40 || termCount >= perTerm) return;
+          const doc = this.docs[id];
+          if (filter && !filter(doc)) return;
+          if (exclB.length && exclB.some(e => (' ' + doc.bn + ' ').includes(' ' + e + ' '))) return;
+          have.add(id); relCount++; termCount++;
+          hits.push({ id, doc, score: relScore * w * (doc.bn === kb ? 1.5 : 1), tier: TIER.related, via: text, tiers: [] });
+        });
+      });
+    }
+  }
+
+  for (const h of hits) if (h.doc.w != null && h.doc.w !== 1) h.score *= h.doc.w;   // per-document weight (how a verse is mentioned)
+  hits.sort((a, b) => (info.partial ? (b.cov || 0) - (a.cov || 0) : 0) || group(a.tier) - group(b.tier) || b.score - a.score || a.doc.len - b.doc.len || a.id - b.id);
+  info.hl = hl;
+  info.ms = performance.now() - t0;
+  return { hits, info, parsed: pq };
+};
+function group(tier) { return tier <= 1 ? 0 : tier === 2 ? 1 : tier <= 4 ? 2 : tier === 5 ? 3 : tier === 6 ? 4 : 5; }
+function proximity(doc, qterms) {
+  const keys = qterms.filter(t => !t.stop).map(t => t.base);
+  const pos = keys.map(k => doc.toks.map((tk, i) => (tk.base === k || tk.stem === k) ? i : -1).filter(i => i >= 0));
+  if (pos.some(p => !p.length)) return 0;
+  let best = 99;
+  pos[0].forEach(p0 => { let lo = p0, hi = p0; pos.slice(1).forEach(ps => { const c = ps.reduce((b, p) => Math.abs(p - p0) < Math.abs(b - p0) ? p : b, ps[0]); lo = Math.min(lo, c); hi = Math.max(hi, c); }); best = Math.min(best, hi - lo + 1); });
+  return best <= keys.length ? 1 : best <= keys.length + 2 ? 0.5 : 0;
+}
+// Cleans a query of what is not part of the search: verse numbers and citations copied with a verse
+// («(255)», «\u06DD٢٥٥», «[البقرة: 255]»), «قال تعالى», a leading basmala, honorifics («رضي الله عنه»,
+// «صلى الله عليه وسلم») and question frames («ماذا قال الشيخ عن …»). Returns '' when nothing was removed.
+const HONORIFIC = /(^| )(صلي الله عليه وسلم|عليه الصلاة والسلام|عليه الصلاه والسلام|رضي الله عنه|رضي الله عنها|رضي الله عنهما|رضي الله عنهم|رحمه الله|عليه السلام|عليها السلام|عليهم السلام|عليهما السلام|سبحانه وتعالي|عز وجل|جل جلاله)(?= |$)/g;
+const LEAD = /^(قال تعالي|قال الله تعالي|قوله تعالي|قال الله عز وجل|قال الله|بسم الله الرحمن الرحيم|ماذا قال الشيخ (عن|في)|ماذا يقول الشيخ (عن|في)|ما راي الشيخ في|راي الشيخ في|ما قول الشيخ في|كلام الشيخ عن|ماذا قال الشيخ بسام جرار (عن|في)) +/;
+function cleanQuery(q) {
+  const raw = String(q || '');
+  let t = raw.replace(/[(\[﴿]\s*[\d\u0660-\u0669\u06F0-\u06F9]+\s*[)\]﴾]/g, ' ')                     // (255) ﴿٢٥٥﴾
+             .replace(/\u06DD\s*[\d\u0660-\u0669\u06F0-\u06F9]*/g, ' ')                                     // \u06DD٢٥٥
+             .replace(/[(\[]\s*(?:سورة\s+)?[\u0621-\u064A\u0671\s]{2,30}[:：،,]\s*[\d\u0660-\u0669\u06F0-\u06F9]+(?:\s*[-–]\s*[\d\u0660-\u0669\u06F0-\u06F9]+)?\s*[)\]]/g, ' ')   // [البقرة: 255]
+             .replace(/[ﷺﷻ]/g, ' ');
+  let n = mnorm(t);
+  const before = n;
+  for (let k = 0; k < 3; k++) { const m = n.match(LEAD); if (!m || n.length <= m[0].length) break; n = n.slice(m[0].length); }
+  n = n.replace(HONORIFIC, ' ').replace(/\s+/g, ' ').trim();
+  if (t === raw && n === before) return '';
+  return n || '';
+}
+
+// a quoted phrase, word by word, in either spelling of each word
+function phraseIn(doc, words) {
+  const tk = doc.toks, L = words.length;
+  outer: for (let i = 0; i + L <= tk.length; i++) {
+    for (let j = 0; j < L; j++) { const t = tk[i + j], w = words[j]; if (t.n !== w[0] && t.n !== w[1] && t.alt !== w[0] && t.alt !== w[1]) continue outer; }
+    return true;
+  }
+  return false;
+}
+// documents containing a base-form phrase
+Index.prototype.phraseDocs = function (kb) {
+  const parts = kb.split(' ');
+  // start from the rarest word: the fewest documents to check (a word absent from the index means no match)
+  let post = null;
+  for (const p of parts) { const x = this.BA.get(p); if (!x) return []; if (!post || x.length < post.length) post = x; }
+  const ids = [...new Set(post)];
+  if (parts.length === 1) return ids;
+  return ids.filter(id => (' ' + this.docs[id].bn + ' ').includes(' ' + kb + ' '));
+};
+Index.prototype.fuzzy = function (key) {
+  const max = fuzzyMax(key.length), out = [];
+  for (const k of this.baKeys) {
+    if (Math.abs(k.length - key.length) > Math.ceil(max) || k === key) continue;
+    const d = wdist(key, k, max);
+    if (d <= max) out.push({ key: k, d, df: uniqDf(this.BA.get(k)) });
+  }
+  // ties: prefer the candidate that restores a dropped letter (الالحد → الالحاد, not اللحد), then the more frequent
+  out.sort((a, b) => a.d - b.d || (b.key.length >= key.length) - (a.key.length >= key.length) || b.df - a.df);
+  return out.slice(0, 4);
+};
+Index.prototype.prefix = function (p, limit) {
+  const arr = this.exSorted;
+  let lo = 0, hi = arr.length;
+  while (lo < hi) { const mid = (lo + hi) >> 1; if (arr[mid] < p) lo = mid + 1; else hi = mid; }
+  const out = [];
+  for (let i = lo; i < arr.length && arr[i].startsWith(p); i++) if (arr[i].length <= p.length + 7) out.push(arr[i]);
+  out.sort((a, b) => uniqDf(this.EX.get(b)) - uniqDf(this.EX.get(a)));
+  return out.slice(0, limit);
+};
+// related-concept expansion from the semantic map
+Index.prototype.setConcepts = function (map) {
+  this.concepts = [];
+  this.conceptByKey = new Map();
+  Object.keys(map).forEach(cat => {
+    const c = { name: cat, key: this.baseText(cat), terms: map[cat].map(t => ({ text: t, key: this.baseText(t) })) };
+    const idx = this.concepts.push(c) - 1;
+    [c.key, ...c.terms.map(t => t.key)].forEach(k => { if (!k) return; if (!this.conceptByKey.has(k)) this.conceptByKey.set(k, []); this.conceptByKey.get(k).push(idx); });
+  });
+};
+Index.prototype.expansions = function (fullB, fullN) {
+  const terms = [], seen = new Set([fullB]);
+  const addT = (text, w) => { const k = this.baseText(text); if (!k || seen.has(k)) return; seen.add(k); terms.push({ text, w }); };
+  (this.syn.get(fullB) || []).forEach(gi => SYNONYMS[gi].forEach(p => addT(p, 0.9)));
+  // a broad concept name (e.g. "الأخلاق") expands to its members; a member does not pull in its siblings
+  if (this.conceptByKey) (this.conceptByKey.get(fullB) || []).forEach(ci => {
+    const c = this.concepts[ci];
+    if (c.key === fullB) c.terms.forEach(t => addT(t.text, 0.6));
+  });
+  return { terms: terms.slice(0, 40) };
+};
+// spelling suggestions for "did you mean"
+Index.prototype.suggest = function (query) {
+  const pq = parseQuery(query);
+  let changed = false;
+  const out = pq.toks.map(t => {
+    const an = this.analyze(t.m);
+    if (this.BA.has(an.base) || this.EX.has(t.n) || STOP.has(t.n)) return t.n;
+    const c = this.fuzzy(an.base)[0];
+    if (!c) return t.n;
+    changed = true;
+    // keep the article if the user typed one
+    return t.n.startsWith('ال') && !c.key.startsWith('ال') ? 'ال' + c.key : c.key;
+  });
+  return changed ? out.join(' ') : null;
+};
+// which highlight class applies to a doc token
+Index.prototype.classify = function (tk, hl) {
+  if (!hl) return null;
+  if (hl.exact.has('EX:' + tk.n) || hl.exact.has('BA:' + tk.base) || (tk.alt && (hl.exact.has('EX:' + tk.alt) || hl.exact.has('BA:' + tk.altBase)))) return 'exact';
+  if (hl.syn.has('BA:' + tk.base)) return 'syn';
+  if (hl.stem.has('ST:' + tk.stem) || hl.stem.has('BA:' + tk.base)) return 'stem';
+  if (hl.fuzzy.has('BA:' + tk.base)) return 'fuzzy';
+  if (hl.prefix.has('EX:' + tk.n)) return 'prefix';
+  if (tk.root && hl.root.has('RT:' + tk.root)) return 'root';
+  return null;
+};
+
+/* ---------- 12. Quran index ---------- */
+function QuranIndex(data) {
+  this.verses = []; this.inv = new Map(); this.bySA = new Map(); this.meta = [];
+  const s = data.s;
+  for (let i = 0; i < s.length; i++) {
+    this.meta.push({ name: s[i][0], type: s[i][1], count: s[i][2].length });
+    s[i][2].forEach((text, j) => {
+      const [v1, v2] = quranForms(text);
+      const id = this.verses.length;
+      const v = { s: i + 1, a: j + 1, text, v1, v2, id };
+      this.verses.push(v);
+      this.bySA.set((i + 1) + ':' + (j + 1), v);
+      const toks = new Set();
+      (v1 + ' ' + v2).split(' ').forEach(w => {
+        if (!w) return;
+        toks.add(w);
+        const b = baseOf(w, null);
+        toks.add(toN(b));
+        const k = skel(w); if (k.length >= 2) toks.add('s:' + k);
+        if (w.length >= 3 && 'وف'.includes(w[0])) { toks.add(w.slice(1)); toks.add(toN(baseOf(w.slice(1), null))); }
+      });
+      toks.forEach(w => { let a = this.inv.get(w); if (!a) this.inv.set(w, a = []); a.push(id); });
+    });
+  }
+}
+QuranIndex.prototype.get = function (s, a) { return this.bySA.get(s + ':' + a); };
+// terms: normalized query words; full: normalized query phrase
+QuranIndex.prototype.search = function (terms, full) {
+  if (!terms.length) return [];
+  let lists = terms.map(t => {
+    const b = toN(baseOf(t, null)), set = new Set();
+    [t, b, swapFinal(t), swapFinal(b), 's:' + skel(t), 's:' + skel(b)].forEach(k => { if (k) (this.inv.get(k) || []).forEach(x => set.add(x)); });
+    return set;
+  });
+  // tolerate one unmatched word in longer quotes (spelling differences between scripts)
+  // retrieval is lenient (one word may differ in spelling, the last may be cut); verification below is strict
+  const tol = (terms.length >= 6 ? 2 : terms.length >= 4 ? 1 : 0) + (terms.length >= 3 ? 1 : 0);
+  const cnt = new Map(), wsum = new Map(), NV = this.verses.length;
+  lists.forEach(l => {
+    const w = Math.log(1 + NV / (1 + l.size));          // rare words weigh more
+    l.forEach(id => { cnt.set(id, (cnt.get(id) || 0) + 1); wsum.set(id, (wsum.get(id) || 0) + w); });
+  });
+  let cand = [];
+  for (const [id, c] of cnt) if (c >= terms.length - tol) cand.push(id);
+  cand.sort((a, b) => wsum.get(b) - wsum.get(a));
+  const allIds = new Set(); for (const [id, c] of cnt) if (c === terms.length) allIds.add(id);
+  if (cand.length > 500) cand = cand.slice(0, 500);
+  const pf = ' ' + full + ' ';
+  return cand.map(id => {
+    const v = this.verses[id];
+    const phrase = terms.length >= 2 && ((' ' + v.v1 + ' ').includes(pf) || (' ' + v.v2 + ' ').includes(pf) || containsLoose(v, full));
+    return { s: v.s, a: v.a, id, phrase, all: allIds.has(id) };
+  }).filter(x => x.phrase || x.all).sort((x, y) => (y.phrase - x.phrase) || x.id - y.id);
+};
+// phrase match tolerant to clitics on each word (e.g. "الحي القيوم" vs "وهو الحي القيوم")
+function containsLoose(v, full) {
+  const q = full.split(' ');
+  const tol = q.length >= 6 ? 2 : q.length >= 4 ? 1 : 0;
+  for (const form of [v.v1, v.v2]) {
+    const w = form.split(' ');
+    for (let i = 0; i + q.length <= w.length; i++) {
+      let miss = 0;
+      for (let j = 0; j < q.length && miss <= tol; j++) {
+        const a = w[i + j], b = q[j];
+        // quotes are often cut mid-word at the end (يا موس، من أهل)
+        const cut = j === q.length - 1 && b.length >= 2 && a.startsWith(b);
+        if (cut || eqLoose(a, b)) continue;
+        // tolerate a spelling variant (رءا / رأى), never a different word (البر / الأرحام)
+        if (wdist(a, b, 2) <= 2 && skel(a)[0] === skel(b)[0]) miss++; else { miss = tol + 1; break; }
+      }
+      if (miss <= tol) return true;
+    }
+  }
+  return false;
+}
+// consonantal skeleton: drops alef/hamza and doubled letters (ٱل\u064E\u0651ي\u06E1ل = الليل، أ\u064Eر\u064Eء\u064Eي\u06E1ت\u064E = أرأيت)
+function skel(w) { return w.replace(/[اء]/g, '').replace(/(.)\1+/g, '$1'); }
+function eqLoose(a, b) {
+  if (a === b) return true;
+  const ba = toN(baseOf(a, null)), bb = toN(baseOf(b, null));
+  if (ba === bb || swapFinal(ba) === bb) return true;
+  if (a.length === b.length + 1 && 'وفبلك'.includes(a[0]) && a.slice(1) === b) return true;
+  if (b.length === a.length + 1 && 'وفبلك'.includes(b[0]) && b.slice(1) === a) return true;
+  const sa = skel(a), sb = skel(b);
+  if (sa.length >= 2 && sa === sb) return true;
+  return Math.min(a.length, b.length) >= 4 && wdist(a, b, 1) <= 1;
+}
+// highlight a verse's Uthmani text for the given normalized words
+QuranIndex.prototype.highlightWords = function (text, words) {
+  const set = new Set();
+  words.forEach(w => { const b = toN(baseOf(w, null)); [w, b, swapFinal(w), swapFinal(b)].forEach(k => k && set.add(k)); });
+  return text.split(/(\s+)/).map(w => {
+    if (!w.trim()) return { t: w };
+    const [a, b] = quranForms(w);
+    const hit = [a, b].some(x => x && (set.has(x) || set.has(toN(baseOf(x, null))) || set.has(swapFinal(toN(baseOf(x, null))) || '')));
+    return { t: w, hit };
+  });
+};
+
+/* ---------- 13. Typed with the wrong keyboard layout (hgwghm → الصلاة) ---------- */
+const KB = { q: 'ض', w: 'ص', e: 'ث', r: 'ق', t: 'ف', y: 'غ', u: 'ع', i: 'ه', o: 'خ', p: 'ح', '[': 'ج', ']': 'د', a: 'ش', s: 'س', d: 'ي', f: 'ب', g: 'ل', h: 'ا', j: 'ت', k: 'ن', l: 'م', ';': 'ك', "'": 'ط', z: 'ئ', x: 'ء', c: 'ؤ', v: 'ر', b: 'لا', n: 'ى', m: 'ة', ',': 'و', '.': 'ز', '/': 'ظ', '`': 'ذ', H: 'أ', B: 'لآ', Y: 'إ', N: 'آ', T: 'لإ', G: 'لأ' };
+function latinToArabic(q) {
+  if (!/[a-z]/i.test(q) || /[\u0600-\u06FF]/.test(q)) return null;
+  return q.replace(/[a-z\[\];',.\/`]/gi, c => KB[c] || KB[c.toLowerCase()] || c);
+}
+
+/* ---------- 14. Lesson explanation-depth ranking ---------- */
+const EXPL_RE = /(^| )(معني|معاني|الفرق|فرق|تفريق|مفهوم|تعريف|حقيقه|شرح|تفسير|انواع|دلاله|اشتقاق|اشتقاقات|لغه|بيان|توضيح|خصايص|شروط|مراتب|درجات|اصل|اقسام)( |$)/;
+const LESSON_TIER_W = [1.0, 0.55, 0.78, 0.55, 0.50, 0.35, 0.45, 0.20];
+const LESSON_MK_W = { o: 0.90, m: 0.85, '': 0.80, '?': 0.75, s: 0.60, c: 0.25, r: 0.20 };
+
+/** Precompute per-entry duration slots, lesson total time, and analyzed title tokens. */
+function prepareLessons(lessons, docs, idx) {
+  const iter = lessons instanceof Map ? lessons.values() : lessons;
+  for (const L of iter) {
+    const list = (L.docs || []).map(x => typeof x === 'number' ? (docs && docs[x]) : x).filter(Boolean);
+    const atSec = new Map();
+    for (const d of list) if (d.sec != null) atSec.set(d.sec, (atSec.get(d.sec) || 0) + 1);
+    const uniqT = [...atSec.keys()].sort((a, b) => a - b);
+    const nextMap = new Map();
+    for (let i = 0; i < uniqT.length; i++) nextMap.set(uniqT[i], i + 1 < uniqT.length ? uniqT[i + 1] - uniqT[i] : null);
+    const gaps = [...nextMap.values()].filter(g => g != null && g > 0 && g < 1800).sort((a, b) => a - b);
+    L.medianGap = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 60;
+    L.totalSec = uniqT.length >= 2 ? Math.max(600, uniqT[uniqT.length - 1] + L.medianGap) : 3600;
+    const maxSlot = Math.min(600, Math.max(180, L.medianGap * 2.5));
+    for (const d of list) {
+      if (d.sec == null) { d.slotDur = Math.min(L.medianGap, 240); d.slotSize = 1; }
+      else {
+        const raw = nextMap.get(d.sec);
+        d.slotDur = raw != null ? Math.max(15, Math.min(raw, maxSlot)) : Math.min(L.medianGap, 240);
+        d.slotSize = atSec.get(d.sec) || 1;
+      }
+    }
+    L.titleToks = idx && L.title ? tokenize(L.title).map(t => idx.analyze(t.m, t.hz)) : [];
+  }
+}
+
+/** Score how widely and deeply a single lesson explains the searched term(s). */
+function scoreLesson(L, hits, info) {
+  const qTerms = info && info.terms ? info.terms.filter(t => !t.stop) : [];
+  const textSeen = new Map();
+  const timeSlots = new Map();
+  let aspects = 0, directAspects = 0, explCount = 0, directExpl = 0, bestTier = 9, directHits = 0, maxHitScore = 0;
+
+  const sorted = hits.slice().sort((a, b) => (a.tier < 0 ? 9 : a.tier) - (b.tier < 0 ? 9 : b.tier) || b.score - a.score);
+  for (const h of sorted) {
+    const d = h.doc;
+    if (h.score > maxHitScore) maxHitScore = h.score;
+    const tw = h.tier >= 0 ? (LESSON_TIER_W[h.tier] != null ? LESSON_TIER_W[h.tier] : 0.25) : 0.8;
+    if (h.tier >= 0 && h.tier < bestTier) bestTier = h.tier;
+    const isDirect = h.tier < 0 || h.tier === 0 || h.tier === 2;
+    if (h.tier === 0 || h.tier === 2) directHits++;
+    const kw = d.type === 'topic' ? 1.0 : (LESSON_MK_W[d.mk || ''] != null ? LESSON_MK_W[d.mk || ''] : 0.7);
+    const isExpl = d.type === 'topic' && EXPL_RE.test(d.nn || '');
+    if (isExpl && (h.tier < 0 || h.tier <= 2)) {
+      explCount++;
+      if (isDirect) directExpl++;
+    }
+    const explBoost = isExpl ? 1.25 : 1.0;
+
+    const textKey = d.nn || norm(d.text || '');
+    const rep = textSeen.get(textKey) || 0;
+    textSeen.set(textKey, rep + 1);
+    const repFactor = rep === 0 ? 1.0 : rep === 1 ? 0.4 : 0.2;
+
+    const w = tw * kw * explBoost * repFactor;
+    const tKey = d.sec != null ? d.sec : ('u' + d.id);
+    const slot = timeSlots.get(tKey);
+    if (!slot) {
+      timeSlots.set(tKey, { dur: d.slotDur || 60, slotSize: d.slotSize || 1, bestW: w, matched: 1, direct: isDirect });
+      aspects += w;
+      if (isDirect) directAspects += w;
+    } else {
+      slot.matched++;
+      slot.bestW = Math.max(slot.bestW, w);
+      if (isDirect) slot.direct = true;
+      aspects += w * 0.35;
+      if (isDirect) directAspects += w * 0.35;
+    }
+  }
+
+  let effSec = 0;
+  for (const s of timeSlots.values()) {
+    effSec += s.dur * Math.min(1, s.matched / Math.max(1, s.slotSize)) * Math.min(1.15, s.bestW);
+  }
+  const effMin = effSec / 60;
+
+  const timeShare = Math.min(1, effSec / ((L && L.totalSec) || 3600));
+  const entryShare = Math.min(1, aspects / Math.max(8, (L && L.docs && L.docs.length) || 8));
+  const focusShare = 0.6 * timeShare + 0.4 * entryShare;
+
+  const gap = (L && L.medianGap) || 60;
+  const rawScale = Math.max(0.85, Math.min(3.5, Math.pow(gap / 45, 0.90)));
+  let directSlots = 0;
+  for (const s of timeSlots.values()) if (s.direct) directSlots++;
+  const densityScale = directSlots < 2 && rawScale > 1 ? 1 : rawScale;
+  const normAspects = directAspects * densityScale + (aspects - directAspects);
+  const normExpl = directExpl * densityScale + (explCount - directExpl);
+
+  let titleScore = 0;
+  if (qTerms.length && L && L.titleToks && L.titleToks.length) {
+    let exactM = 0, stemM = 0, rootM = 0;
+    for (const qt of qTerms) {
+      if (L.titleToks.some(lt => lt.base === qt.base)) exactM++;
+      else if (L.titleToks.some(lt => lt.stem === qt.stem)) stemM++;
+      else if (qt.root && L.titleToks.some(lt => lt.root === qt.root)) rootM++;
+    }
+    const matched = exactM + stemM + rootM;
+    const weighted = (exactM + 0.8 * stemM + 0.65 * rootM) / qTerms.length;
+    titleScore = matched === qTerms.length ? weighted : (matched > 0 ? 0.35 * weighted : 0);
+  }
+
+  let directGate = 1.0;
+  if (qTerms.length && directHits === 0) {
+    directGate = bestTier === 1 ? 0.42 : bestTier <= 4 ? 0.55 : bestTier === 5 ? 0.35 : 0.20;
+  }
+
+  const raw = (
+    2.6 * Math.log1p(normAspects) +
+    1.8 * Math.log1p(effMin) +
+    3.4 * Math.sqrt(focusShare) +
+    1.8 * titleScore +
+    0.8 * Math.log1p(normExpl)
+  ) * directGate;
+  const pct = Math.max(1, Math.min(99, Math.round(100 * (1 - Math.exp(-raw / 7.5)))));
+  const level = pct >= 72 ? 'wide' : pct >= 48 ? 'mid' : 'brief';
+
+  return {
+    raw, pct, level,
+    aspects: +aspects.toFixed(2),
+    effMin: +effMin.toFixed(1),
+    focusPct: Math.round(focusShare * 100),
+    titleScore: +titleScore.toFixed(2),
+    directHits, explCount, bestTier, maxHitScore,
+    hitCount: hits.length
+  };
+}
+
+/** Group search hits by lesson and rank them from widest/deepest explanation downwards. */
+function rankLessons(hits, info) {
+  const byL = new Map();
+  for (const h of hits) {
+    const d = h.doc, k = d.lessonKey;
+    let g = byL.get(k);
+    if (!g) { g = { key: k, L: d.L, hits: [] }; byL.set(k, g); }
+    g.hits.push(h);
+  }
+  const list = [...byL.values()];
+  for (const g of list) g.depth = scoreLesson(g.L, g.hits, info);
+  list.sort((a, b) => b.depth.raw - a.depth.raw || b.depth.maxHitScore - a.depth.maxHitScore || b.hits.length - a.hits.length);
+  const map = new Map(list.map(g => [g.key, g.depth]));
+  return { list, map };
+}
+
+/** Rank topic-view groups within each match tier by lesson explanation depth with gentle per-lesson diversity. */
+function rankTopicGroups(groups, lessonScores) {
+  const baseOfG = g => {
+    const h0 = g.hits[0], d = h0.doc;
+    const dp = (lessonScores && lessonScores.get(d.lessonKey)) || { raw: 0 };
+    const kindF = d.type === 'topic' ? 1.0 : (d.mk === 'o' || d.mk === 'm' || !d.mk ? 0.92 : d.mk === 's' ? 0.85 : 0.65);
+    const explB = (d.type === 'topic' && EXPL_RE.test(d.nn || '')) ? 1.08 : 1.0;
+    const bmNorm = 1 + 0.12 * Math.log1p(Math.max(0, h0.score || 0));
+    return dp.raw * kindF * explB * bmNorm;
+  };
+  const items = groups.map(g => {
+    const t = g.hits[0].tier;
+    return { g, grp: group(t), t, base: baseOfG(g), decayed: 0 };
+  });
+  items.sort((a, b) => a.grp - b.grp || a.t - b.t || b.base - a.base);
+  const seenInL = new Map();
+  for (const it of items) {
+    const key = it.t + '|' + it.g.hits[0].doc.lessonKey;
+    const n = seenInL.get(key) || 0;
+    seenInL.set(key, n + 1);
+    it.decayed = it.base / (1 + 0.45 * n);
+  }
+  items.sort((a, b) => a.grp - b.grp || a.t - b.t || b.decayed - a.decayed || b.base - a.base);
+  return items.map(it => it.g);
+}
+
+return {
+  latinToArabic, isStopWord, isSoftWord, storyOf,
+  norm, mnorm, tokenize, asciiDigits, baseOf, lightStem, isri, rootOf, wdist, quranForms,
+  parseQuery, parseReference, resolveSurah, cleanQuery, SURAHS, AYAH_COUNTS, STOP,
+  linkSeconds, minuteSeconds, fmtTime, youtubeId, linkAt, parseDate, cleanLesson, mentionKind, MENTION_WEIGHT,
+  prepareLessons, scoreLesson, rankLessons, rankTopicGroups,
+  Index, QuranIndex, TIER, TIER_NAMES, group
+};
+})();
+
+</script>
+<script>
+(function () {
+'use strict';
+const E = Engine;
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nf = n => Number(n).toLocaleString('ar-EG');
+
+/* ================= minimal .xlsx reader: ZIP directory + DecompressionStream ================= */
+async function openZip(buf) {
+  const dv = new DataView(buf), u8 = new Uint8Array(buf), td = new TextDecoder();
+  let eocd = -1;
+  for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  if (eocd < 0) throw new Error('هذا الملف ليس ملف Excel بصيغة \u200E.xlsx\u200E.');
+  const count = dv.getUint16(eocd + 10, true);
+  let p = dv.getUint32(eocd + 16, true);
+  const files = new Map();
+  for (let k = 0; k < count; k++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) throw new Error('ملف Excel تالف أو غير مكتمل.');
+    const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true);
+    const nlen = dv.getUint16(p + 28, true), xlen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+    files.set(td.decode(u8.subarray(p + 46, p + 46 + nlen)), { method, csize, off });
+    p += 46 + nlen + xlen + clen;
+  }
+  async function read(name) {
+    const f = files.get(name);
+    if (!f) return null;
+    if (f.csize === 0xFFFFFFFF || f.off === 0xFFFFFFFF) throw new Error('الملف كبير جد\u064Bا (ZIP64)؛ احفظه من Excel مرة أخرى بصيغة \u200E.xlsx\u200E العادية.');
+    const start = f.off + 30 + dv.getUint16(f.off + 26, true) + dv.getUint16(f.off + 28, true);
+    const data = u8.subarray(start, start + f.csize);
+    if (f.method === 0) return stripNs(td.decode(data));
+    if (f.method !== 8) throw new Error('طريقة ضغط غير مدعومة في ملف Excel.');
+    if (typeof DecompressionStream !== 'function') throw new Error('هذا المتصفح قديم ولا يستطيع فتح ملفات Excel؛ استخدم نسخة حديثة من Chrome أو Edge أو Firefox أو Safari.');
+    const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    return stripNs(await new Response(stream).text());
+  }
+  return { files, read };
+}
+
+const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
+function unxml(s) {
+  return s.replace(/&(#[xX][0-9a-fA-F]+|#\d+|\w+);/g, (m, e) => e[0] === '#'
+    ? String.fromCodePoint(e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10))
+    : (ENT[e] != null ? ENT[e] : m))
+    .replace(/_x([0-9A-Fa-f]{4})_/g, (m, h) => String.fromCharCode(parseInt(h, 16)));   // Excel's own escapes (as openpyxl reads them)
+}
+const attr = (s, name) => { const m = new RegExp('\\b' + name + '=(?:"([^"]*)"|\'([^\']*)\')').exec(s); return m ? unxml(m[1] != null ? m[1] : m[2]) : null; };
+// some tools write prefixed tags (<x:row>): drop element prefixes so one set of patterns reads every file
+const stripNs = xml => xml && xml.replace(/<(\/?)[A-Za-z_][\w.-]*:(?=[A-Za-z_])/g, '<$1');
+// text of an <si>/<is> element: every <t> run, without phonetic guides
+const runText = x => { let out = ''; x = x.replace(/<rPh\b[\s\S]*?<\/rPh>/g, ''); const re = /<t\b[^>]*?(?:\/>|>([\s\S]*?)<\/t>)/g; let m; while ((m = re.exec(x))) out += m[1] ? unxml(m[1]) : ''; return out; };
+const colIndex = ref => { let n = 0; for (const ch of ref.replace(/\d+$/, '')) n = n * 26 + ch.charCodeAt(0) - 64; return n - 1; };
+
+const BUILTIN_DATE = new Set([14, 15, 16, 17, 18, 19, 20, 21, 22, 45, 46, 47]);
+function dateStyles(stylesXml) {
+  const custom = new Map(), dates = [];
+  if (!stylesXml) return dates;
+  const nf = /<numFmt\b([^>]*)\/?>/g; let m;
+  while ((m = nf.exec(stylesXml))) custom.set(+attr(m[1], 'numFmtId'), attr(m[1], 'formatCode') || '');
+  const xfs = /<cellXfs\b[^>]*>([\s\S]*?)<\/cellXfs>/.exec(stylesXml);
+  if (!xfs) return dates;
+  const xf = /<xf\b([^>]*)/g;
+  while ((m = xf.exec(xfs[1]))) {
+    const id = +(attr(m[1], 'numFmtId') || 0);
+    let isDate = BUILTIN_DATE.has(id);
+    if (!isDate && custom.has(id)) {
+      const code = custom.get(id).replace(/"[^"]*"/g, '').replace(/\[[^\]]*\]/g, '').replace(/\\./g, '');
+      isDate = /[dmyhs]/i.test(code) && !/^general$/i.test(code.trim());
+    }
+    dates.push(isDate);
+  }
+  return dates;
+}
+const pad = n => String(n).padStart(2, '0');
+function excelDate(v, date1904) {
+  const ms = Math.round(v * 86400000);
+  if (v >= 0 && v < 1) { const s = Math.floor(ms / 1000); return pad(Math.floor(s / 3600)) + ':' + pad(Math.floor(s / 60) % 60) + ':' + pad(s % 60); }
+  let base = date1904 ? Date.UTC(1904, 0, 1) : Date.UTC(1899, 11, 30);
+  if (!date1904 && v < 60) base += 86400000;                 // Excel's 1900 leap-year quirk
+  const d = new Date(base + ms);
+  const day = d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
+  return d.getUTCHours() || d.getUTCMinutes() || d.getUTCSeconds() ? day + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) : day;
+}
+
+const HEADERS = [['السورة', 'سورة'], ['الآية', 'الاية', 'آية', 'اية', 'رقم الآية'], ['فهرس', 'الفهرس', 'الموضوع'], ['الدقيقة', 'دقيقة', 'الوقت'],
+  ['رابط الدقيقة', 'الرابط', 'رابط'], ['عنوان الدرس', 'الدرس', 'العنوان'], ['تاريخ التنزيل', 'التاريخ', 'تاريخ'], ['نوع الذكر', 'نوع ذكر الآية']];
+
+async function readWorkbook(buf) {
+  const zip = await openZip(buf);
+  const wb = await zip.read('xl/workbook.xml');
+  if (!wb) throw new Error('لم أجد في الملف ورقة عمل؛ هل هو ملف Excel \u200E.xlsx\u200E؟');
+  const date1904 = /date1904=["'](1|true)["']/.test(wb);
+  const rels = (await zip.read('xl/_rels/workbook.xml.rels')) || '';
+  const target = new Map(); let m;
+  const rr = /<Relationship\b([^>]*)\/?>/g;
+  while ((m = rr.exec(rels))) target.set(attr(m[1], 'Id'), attr(m[1], 'Target'));
+  const sheets = []; const sr = /<sheet\b([^>]*)\/?>/g;
+  while ((m = sr.exec(wb))) {
+    let t = target.get(attr(m[1], 'r:id')) || '';
+    t = t.startsWith('/') ? t.slice(1) : 'xl/' + t.replace(/^\.\//, '');
+    sheets.push({ name: attr(m[1], 'name'), path: t });
+  }
+  const sst = [];
+  const ss = await zip.read('xl/sharedStrings.xml');
+  if (ss) { const re = /<si\b[^>]*>([\s\S]*?)<\/si>|<si\s*\/>/g; while ((m = re.exec(ss))) sst.push(m[1] ? runText(m[1]) : ''); }
+  const dates = dateStyles(await zip.read('xl/styles.xml'));
+  const value = (a, inner) => {
+    const t = attr(a, 't') || 'n', s = +(attr(a, 's') || 0);
+    if (t === 'inlineStr') { const is = /<is\b[^>]*>([\s\S]*?)<\/is>/.exec(inner || ''); return is ? runText(is[1]) : ''; }
+    const vm = /<v\b[^>]*>([\s\S]*?)<\/v>/.exec(inner || '');
+    if (!vm) return '';
+    const v = unxml(vm[1]);
+    if (t === 's') return sst[+v] != null ? sst[+v] : '';
+    if (t === 'str' || t === 'e') return v;
+    if (t === 'b') return v === '1' ? 'True' : 'False';
+    if (t === 'd') return v.replace('T', ' ').replace(/(\.\d+)?Z?$/, '');
+    const num = Number(v);
+    if (!isFinite(num)) return v;
+    if (dates[s]) { value.dateCell = true; return excelDate(num, date1904); }
+    return String(num);
+  };
+  const parseSheet = xml => {
+    const rows = []; const rowRe = /<row\b([^>]*?)(?:\/>|>([\s\S]*?)<\/row>)/g; let r, last = 0;
+    while ((r = rowRe.exec(xml))) {
+      const rn = +(attr(r[1], 'r') || last + 1); last = rn;
+      const cells = [], dc = []; const cr = /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g; let c, ci = -1;
+      while ((c = cr.exec(r[2] || ''))) { const ref = attr(c[1], 'r'); ci = ref ? colIndex(ref) : ci + 1; value.dateCell = false; cells[ci] = value(c[1], c[2]); if (value.dateCell) dc[ci] = true; }
+      rows.push({ rn, cells, dc });
+    }
+    return rows;
+  };
+  const normH = s => E.norm(String(s || ''));
+  const HN = HEADERS.map(list => list.map(normH));
+  let chosen = null; const found = [];
+  for (const sh of sheets) {
+    const xml = await zip.read(sh.path);
+    if (!xml) continue;
+    const rows = parseSheet(xml);
+    const hi = rows.slice(0, 25).findIndex(r => r.cells.some(x => HN[2].includes(normH(x))) && r.cells.some(x => HN[0].includes(normH(x)) || HN[1].includes(normH(x))));
+    const cand = { sheet: sh, rows, hi, size: rows.length - (hi + 1) };
+    if (hi >= 0) found.push(cand);
+    if (!chosen) chosen = cand;
+  }
+  if (found.length) chosen = found.reduce((a, b) => (b.size > a.size ? b : a));
+  if (!chosen) throw new Error('الملف لا يحتوي على أي ورقة بيانات.');
+  const { rows, hi } = chosen;
+  let map = [0, 1, 2, 3, 4, 5, 6, -1], body = rows;
+  const how = map.map(() => 'position');
+  if (hi >= 0) {
+    const head = rows[hi].cells.map(normH);
+    map = HN.map(names => head.findIndex(h => names.includes(h)));
+    map.forEach((j, k) => { how[k] = j >= 0 ? 'header' : 'missing'; });
+    // a missing column keeps its usual place only if no other field is read from there; «نوع الذكر» is optional
+    for (let k = 0; k < 7; k++) if (map[k] < 0 && !map.includes(k)) { map[k] = k; how[k] = 'position'; }
+    body = rows.slice(hi + 1);
+  }
+  if (map[2] < 0) throw new Error('لم أجد عمود «فهرس» في صف العناوين، ولا يمكن استعمال العمود C لأنه مقروء لحقل آخر.');
+  const NBSP = String.fromCharCode(160);
+  const clean = x => String(x == null ? '' : x).split(NBSP).join(' ').replace(/[ \t]{2,}/g, ' ').trim();
+  const out = [], rowNo = [], dcRow = [];
+  body.forEach(r => {
+    const v = map.map(j => (j < 0 ? '' : clean(r.cells[j])));
+    if (!v.some(Boolean)) return;                                           // empty row
+    if (v[4] && !/^https?:\/\//i.test(v[4]) && /^(www\.)?(youtu\.be|youtube\.com)\//i.test(v[4])) v[4] = 'https://' + v[4];
+    out.push(v); rowNo.push(r.rn); dcRow.push(map[6] >= 0 && !!r.dc[map[6]]);
+  });
+  // Excel set to US dates reads «2/10/2011» (2 October) as February 10 and keeps «26/4/2011» as text.
+  // When every date kept as text has a day above 12 and every Excel date among them a day of 12 or
+  // less, those Excel dates were swapped: put day and month back.
+  const swapped = [];
+  {
+    const textD = [], cellD = [];
+    out.forEach((v, i) => { if (!v[6]) return; if (dcRow[i]) cellD.push(i); else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(v[6])) textD.push(i); });
+    if (textD.length >= 3 && textD.every(i => +out[i][6].split('/')[0] > 12)) {
+      const last = Math.max(...textD), span = cellD.filter(i => i <= last);
+      if (span.length && span.every(i => +out[i][6].slice(8, 10) <= 12)) span.forEach(i => {
+        const v = out[i][6], d = v.slice(8, 10), m = v.slice(5, 7);
+        if (d !== m) { out[i][6] = v.slice(0, 5) + d + '-' + m + v.slice(10); swapped.push([rowNo[i], v.slice(0, 10), out[i][6].slice(0, 10), out[i][5]]); }
+      });
+    }
+  }
+  const others = found.filter(f => f !== chosen).map(f => ({ name: f.sheet.name, size: f.size }));
+  const letter = j => (j >= 26 ? String.fromCharCode(64 + Math.floor(j / 26)) : '') + String.fromCharCode(65 + (j % 26));
+  const mapping = HEADERS.map((names, k) => ({ field: names[0], col: map[k] >= 0 ? letter(map[k]) : '', how: map[k] >= 0 ? how[k] : 'missing' }));
+  return { rows: out, rowNo, sheet: chosen.sheet.name, header: hi >= 0 ? rows[hi].rn : 0, mapped: hi >= 0, hasType: map[7] >= 0, others, mapping, swapped };
+}
+
+/* ================= checks ================= */
+function analyse(data) {
+  const { rows, rowNo } = data;
+  const C = [];
+  const add = (key, title, note, head) => { const c = { key, title, note, head, items: [] }; C.push(c); return c.items; };
+  const noText = add('noText', 'صفوف بلا نص في عمود «فهرس»', 'لن تظهر في الموقع.', ['الصف', 'الرابط', 'الدرس']);
+  const badSurah = add('badSurah', 'اسم سورة غير معروف', 'لن ت\u064Fربط بموضعها في المصحف.', ['الصف', 'السورة', 'النص']);
+  const badAyah = add('badAyah', 'رقم آية ناقص أو أكبر من عدد آيات السورة', 'الأرجح أن الرقم أو اسم السورة خطأ.', ['الصف', 'السورة', 'الآية', 'النص']);
+  const noLink = add('noLink', 'صفوف بلا رابط يوتيوب صالح', 'إن كان للدرس فيديو واحد في بقية الصفوف أكمل الموقع الرابط تلقائي\u064Bا.', ['الصف', 'الرابط', 'الدرس']);
+  const mism = add('mism', 'الدقيقة لا تطابق وقت الرابط (فرق أكثر من 15 ثانية)', 'يعتمد الموقع وقت الرابط عند التشغيل.', ['الصف', 'الدقيقة', 'وقت الرابط', 'النص']);
+  const badDate = add('badDate', 'تاريخ غير مفهوم', 'سيظهر الدرس بلا تاريخ.', ['الصف', 'التاريخ', 'الدرس']);
+  const multi = add('multi', 'عنوان درس واحد بأكثر من فيديو', 'غالب\u064Bا رابط منسوخ من درس آخر.', ['الدرس', 'فيديو مختلف', 'صفوفه']);
+  const dup = add('dup', 'صفوف مكررة تمام\u064Bا', 'يعرض الموقع واحد\u064Bا منها.', ['الصف', 'مكرر للصف', 'النص']);
+  const swapped = add('swapped', 'تواريخ قلب فيها Excel اليوم والشهر (ص\u064Fح\u0651حت تلقائي\u064Bا)', 'أعدنا اليوم والشهر إلى مكانهما في الملف الناتج. لتصحيحها في Excel نفسه: اكتب التاريخ نص\u064B\u0651ا أو اضبط لغة التاريخ على العربية/البريطانية.', ['الصف', 'في Excel', 'بعد التصحيح', 'الدرس']);
+  (data.swapped || []).forEach(x => swapped.push([x[0], x[1], x[2], E.cleanLesson(x[3])]));
+  const ayahNoSurah = add('ayahNoSurah', 'رقم آية بلا اسم سورة', 'يعامله الموقع موضوع\u064Bا؛ أضف اسم السورة.', ['الصف', 'الآية', 'النص']);
+  const ayahRange = add('ayahRange', 'خانة الآية فيها أكثر من رقم', 'يقرأ الموقع الرقم الأول فقط؛ قس\u0651م المدخل أو اكتب رقم\u064Bا واحد\u064Bا.', ['الصف', 'الآية', 'النص']);
+  const noT = add('noT', 'روابط بلا وقت (t=)', 'يعتمد الموقع عمود الدقيقة لهذه الصفوف؛ تأكد من صحته.', ['الصف', 'الدقيقة', 'الرابط']);
+  const oddSurah = add('oddSurah', 'أسماء سور بإملاء غير معتاد', 'يتعر\u0651ف عليها الموقع، لكن توحيدها يسه\u0651ل الفرز.', ['الاسم كما ك\u064Fتب', 'السورة', 'عدد الصفوف', 'أول صف']);
+  const vidTitles = add('vidTitles', 'فيديو واحد بأكثر من عنوان درس', 'غالب\u064Bا عنوان مكتوب بصيغتين؛ يظهر الدرس بعنوانين.', ['الفيديو', 'العناوين', 'صفوف']);
+  const odd = new Map(), vt = new Map();
+  const badKind = data.hasType ? add('badKind', 'قيمة غير معروفة في «نوع الذكر»', 'القيم المعروفة: تفسير (أصلي)، تفسير رئيسي، تفسير فرعي، تلاوة / تكرار، استشهاد عابر. ت\u064Fعامل الآية كأنها مفس\u064E\u0651رة.', ['الصف', 'نوع الذكر', 'النص']) : null;
+  const noKind = data.hasType ? add('noKind', 'آية بلا «نوع الذكر»', 'ت\u064Fعامل كأنها مفس\u064E\u0651رة.', ['الصف', 'السورة', 'الآية', 'النص']) : null;
+  const topicKind = data.hasType ? add('topicKind', 'موضوع (بلا سورة) عليه «نوع الذكر»', 'نوع الذكر خاص بالآيات؛ يتجاهله الموقع هنا. ربما سقط اسم السورة؟', ['الصف', 'نوع الذكر', 'النص']) : null;
+  const kinds = { o: 0, m: 0, s: 0, r: 0, c: 0 };
+  const vids = new Set(), lessons = new Map(), seen = new Map();
+  let ayahs = 0, topics = 0, minD = null, maxD = null;
+  rows.forEach((r, i) => {
+    const n = rowNo[i], text = r[2];
+    const vid = E.youtubeId(/^https?:\/\//i.test(r[4]) ? r[4] : '');
+    if (!text) { noText.push([n, r[4], E.cleanLesson(r[5])]); return; }
+    const s = r[0] ? E.resolveSurah(r[0], true) : 0, a = parseInt(E.asciiDigits(r[1] || ''), 10) || 0;
+    if (!r[0] && r[1]) ayahNoSurah.push([n, r[1], text]);
+    if (r[1] && !/^\d+$/.test(E.asciiDigits(r[1]).trim())) ayahRange.push([n, r[1], text]);
+    if (s && !E.resolveSurah(r[0], false) && E.SURAHS[s - 1] !== r[0]) { const o = odd.get(r[0]) || { s, n: 0, first: n }; o.n++; odd.set(r[0], o); }
+    if (vid && E.linkSeconds(r[4]) == null) noT.push([n, r[3] || '—', r[4]]);
+    if (vid && r[5]) { if (!vt.has(vid)) vt.set(vid, new Map()); const m = vt.get(vid); if (!m.has(r[5])) m.set(r[5], []); m.get(r[5]).push(n); }
+    if (r[0] && !s) badSurah.push([n, r[0], text]);
+    else if (s && (!a || a > E.AYAH_COUNTS[s - 1])) badAyah.push([n, r[0], r[1] || '—', text]);
+    if (s) ayahs++; else topics++;
+    if (data.hasType) {
+      const k = E.mentionKind(r[7]);
+      if (s) { if (!k) noKind.push([n, r[0], r[1], text]); else if (k === '?') badKind.push([n, r[7], text]); else kinds[k]++; }
+      else if (r[7]) topicKind.push([n, r[7], text]);
+    }
+    if (!vid) noLink.push([n, r[4] || '(فارغ)', E.cleanLesson(r[5])]);
+    else vids.add(vid);
+    const t = E.linkSeconds(r[4]), m = E.minuteSeconds(r[3]);
+    if (t != null && m != null && Math.abs(t - m) > 15) mism.push([n, r[3] + ' (ت\u064Fقرأ ' + E.fmtTime(m) + ')', E.fmtTime(t), text]);
+    const d = r[6] ? E.parseDate(r[6]) : null;
+    if (r[6] && !d) badDate.push([n, r[6], E.cleanLesson(r[5])]);
+    if (d) { if (!minD || d.ts < minD.ts) minD = d; if (!maxD || d.ts > maxD.ts) maxD = d; }
+    const l = r[5];
+    if (l) { if (!lessons.has(l)) lessons.set(l, { vids: new Map(), date: d }); if (vid) { const L = lessons.get(l); if (!L.vids.has(vid)) L.vids.set(vid, []); L.vids.get(vid).push(n); } }
+    const k = r.join('|');
+    if (seen.has(k)) dup.push([n, seen.get(k), text]); else seen.set(k, n);
+  });
+  lessons.forEach((L, title) => {
+    if (L.vids.size < 2) return;
+    const v = [...L.vids].sort((x, y) => y[1].length - x[1].length);
+    v.slice(1).forEach(([id, rs]) => multi.push([E.cleanLesson(title), id, rs.slice(0, 15).join('، ')]));
+  });
+  odd.forEach((o, name) => oddSurah.push([name, E.SURAHS[o.s - 1], o.n, o.first]));
+  vt.forEach((m, vid) => { if (m.size > 1) vidTitles.push([vid, [...m.keys()].map(E.cleanLesson).join(' ⟂ '), [...m.values()].map(r => r[0]).join('، ')]); });
+  return { checks: C, stats: { rows: rows.length, ayahs, topics, lessons: lessons.size, videos: vids.size, minD, maxD, kinds } };
+}
+
+function compare(oldRows, rows) {
+  if (!Array.isArray(oldRows)) return null;
+  // rows are matched on their first seven columns; «نوع الذكر» changes are counted separately
+  const cell = x => String(x == null ? '' : x).trim();
+  const key = r => (r || []).slice(0, 7).map(cell).join('|');
+  const bag = new Map();
+  oldRows.forEach(r => { const k = key(r); if (!bag.has(k)) bag.set(k, []); bag.get(k).push(cell((r || [])[7])); });
+  let same = 0, kindChanged = 0;
+  rows.forEach(r => { const q = bag.get(key(r)); if (q && q.length) { same++; if (q.shift() !== cell(r[7])) kindChanged++; } });
+  const oldLessons = new Set(oldRows.map(r => cell((r || [])[5])));
+  const newLessons = [...new Set(rows.map(r => r[5]).filter(l => l && !oldLessons.has(l)))];
+  return { old: oldRows.length, same, kindChanged, added: rows.length - same, removed: oldRows.length - same, newLessons };
+}
+
+/* ================= UI ================= */
+let result = null;
+function show(state, html) { const s = $('#status'); s.className = 'status ' + state; s.innerHTML = html; s.hidden = false; }
+
+async function handle(file) {
+  if (!file) return;
+  $('#out').hidden = true; result = null;
+  if (!/\.xlsx$/i.test(file.name)) { show('err', 'اختر ملف\u064Bا بصيغة <b>\u200E.xlsx\u200E</b> (من Excel: ملف ← حفظ باسم ← مصنف Excel). الصيغة القديمة \u200E.xls\u200E غير مدعومة.'); return; }
+  show('busy', '<span class="spin"></span> جار\u064D قراءة <b>' + esc(file.name) + '</b>…');
+  await new Promise(r => setTimeout(r, 30));
+  try {
+    const t0 = performance.now();
+    const data = await readWorkbook(await file.arrayBuffer());
+    if (!data.rows.length) throw new Error('لم أجد صفوف بيانات في الملف.');
+    const an = analyse(data);
+    const cmp = compare(window.RAW, data.rows);
+    result = { data, an, cmp, name: file.name };
+    render(performance.now() - t0);
+  } catch (e) {
+    console.error(e);
+    show('err', 'تعذ\u0651رت قراءة الملف: ' + esc(e && e.message || e));
+  }
+}
+
+function render(ms) {
+  const { data, an, cmp } = result, S = an.stats;
+  show('ok', '✓ ق\u064Fرئ الملف في ' + nf(Math.round(ms)) + ' مللي ثانية — الورقة «' + esc(data.sheet) + '»' + (data.mapped ? '، عناوين الأعمدة في الصف ' + nf(data.header) : '، ولم أجد صف العناوين فاعتمدت ترتيب الأعمدة A–H') +
+    (data.mapped ? (data.hasType ? '، مع عمود «نوع الذكر»' : '، بلا عمود «نوع الذكر»') : '') +
+    '<br><span class="hint">الأعمدة: ' + data.mapping.filter(m => m.col || m.field !== 'نوع الذكر').map(m => esc(m.field) + ' ← ' + (m.col ? m.col + (m.how === 'position' && data.mapped ? ' (بالموضع، لم أجد عنوانه)' : '') : '—')).join('، ') + '</span>' +
+    (data.mapping.some(m => m.how === 'missing' && m.field !== 'نوع الذكر') ? '<br><b>تنبيه:</b> لم أجد عمود ' + data.mapping.filter(m => m.how === 'missing' && m.field !== 'نوع الذكر').map(m => '«' + esc(m.field) + '»').join('، ') + '؛ سيكون فارغ\u064Bا.' : '') +
+    (data.others.length ? '<br><span class="hint">ورقة أخرى بالأعمدة نفسها لم ت\u064Fستخدم لأنها أصغر: ' + data.others.map(o => '«' + esc(o.name) + '» (' + nf(o.size) + ' صف\u064Bا)').join('، ') + '</span>' : ''));
+  let h = '<div class="cards">' + [
+    ['صفوف البيانات', nf(S.rows)], ['مداخل آيات', nf(S.ayahs)], ['مداخل موضوعات', nf(S.topics)], ['دروس', nf(S.lessons)], ['فيديوهات', nf(S.videos)]].concat(data.hasType ? [['آيات مفس\u064E\u0651رة', nf(S.kinds.o + S.kinds.m + S.kinds.s)], ['استشهادات وتلاوات', nf(S.kinds.r + S.kinds.c)]] : []).concat([['الفترة', S.minD ? '<bdi dir="ltr">' + S.minD.y + ' – ' + S.maxD.y + '</bdi>' : '—']
+  ]).map(([k, v]) => '<div class="card"><b>' + v + '</b><span>' + k + '</span></div>').join('') + '</div>';
+  if (cmp) {
+    h += '<div class="cmp"><h3>مقارنة بملف data.js الحالي</h3><p>الحالي <b>' + nf(cmp.old) + '</b> صف\u064Bا ← الجديد <b>' + nf(S.rows) + '</b> صف\u064Bا: ' +
+      '<span class="plus">+' + nf(cmp.added) + ' جديد أو معد\u0651ل</span> · <span class="minus">−' + nf(cmp.removed) + ' ح\u064Fذف أو ع\u064Fد\u0651ل</span> · ' + nf(cmp.same) + ' دون تغيير' + (cmp.kindChanged ? ' (منها ' + nf(cmp.kindChanged) + ' تغي\u0651ر فيها «نوع الذكر» فقط)' : '') + '</p>' +
+      (cmp.newLessons.length ? '<details><summary>دروس جديدة: ' + nf(cmp.newLessons.length) + '</summary><ol>' + cmp.newLessons.slice(-300).map(l => '<li>' + esc(E.cleanLesson(l)) + '</li>').join('') + '</ol></details>' : '') + '</div>';
+  } else h += '<p class="hint">لم ي\u064Fعثر على data.js بجوار هذه الصفحة، فلا توجد مقارنة بالبيانات الحالية (لا يؤثر ذلك على الملف الناتج).</p>';
+  const issues = an.checks.filter(c => c.items.length);
+  h += '<div class="checks"><h3>فحص البيانات' + (issues.length ? '' : ' — لا ملاحظات ✓') + '</h3>';
+  an.checks.forEach(c => {
+    h += '<details class="chk' + (c.items.length ? ' has' : '') + '"' + (c.items.length && c.items.length <= 5 ? ' open' : '') + '><summary><span class="n">' + nf(c.items.length) + '</span>' + esc(c.title) + '</summary>';
+    if (c.items.length) h += '<p class="note">' + esc(c.note) + ' أرقام الصفوف هي أرقام صفوف Excel.</p><div class="tw"><table><thead><tr>' + c.head.map(x => '<th>' + esc(x) + '</th>').join('') + '</tr></thead><tbody>' +
+      c.items.slice(0, 200).map(r => '<tr>' + r.map(x => '<td>' + esc(x) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>' + (c.items.length > 200 ? '<p class="note">… و' + nf(c.items.length - 200) + ' غيرها.</p>' : '');
+    h += '</details>';
+  });
+  h += '</div>';
+  $('#report').innerHTML = h;
+  $('#out').hidden = false;
+  $('#dl').focus();
+}
+
+function dataJs(rows) {
+  return '// === DATA ===\n// generated from the Excel index sheet (فهرس)\nvar RAW=' + JSON.stringify(rows) + ';\n';
+}
+$('#dl').addEventListener('click', () => {
+  if (!result) return;
+  const blob = new Blob([dataJs(result.data.rows)], { type: 'text/javascript;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'data.js';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  $('#after').hidden = false;
+});
+
+const input = $('#file'), drop = $('#drop');
+input.addEventListener('change', () => handle(input.files[0]));
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => handle(e.dataTransfer.files[0]));
+if (Array.isArray(window.RAW)) $('#cur').textContent = 'البيانات الحالية في data.js: ' + nf(window.RAW.length) + ' صف\u064Bا.';
+
+$('#themeBtn').addEventListener('click', () => {
+  const t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', t);
+  try { localStorage.setItem('idxTheme', JSON.stringify(t)); } catch (e) { /* storage unavailable */ }
+});
+window.__tool = { readWorkbook, analyse, dataJs, get result() { return result; } };
+})();
+
+</script>
+</body>
+</html>
